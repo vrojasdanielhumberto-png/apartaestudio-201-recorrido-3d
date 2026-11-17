@@ -879,12 +879,6 @@
 
           <div class="caja agenda" id="agenda" tabindex="-1" role="region" aria-labelledby="ag-t">
             <p class="ag-cab" id="ag-t"><svg class="ico" aria-hidden="true"><use href="#i-calendario"/></svg>Agenda tu visita</p>
-            <ol class="ag-progreso" aria-label="Pasos para agendar">
-              <li data-etapa="1" aria-current="step">Día</li>
-              <li data-etapa="2">Hora</li>
-              <li data-etapa="3">Datos</li>
-              <li data-etapa="4">Confirmar</li>
-            </ol>
 
             <div class="ag-etapa" data-etapa="1">
               <h3 class="ag-titulo" tabindex="-1">¿Qué día te queda bien?</h3>
@@ -919,25 +913,11 @@
                   </div>
                 </fieldset>
                 <div class="ag-acciones">
-                  <button type="submit" class="btn-primario">Ver resumen</button>
+                  <a class="btn-wa" id="ag-confirmar" href="https://wa.me/573000000000" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Confirmar por WhatsApp</a>
                   <button type="button" class="ag-volver" data-volver="2">← Cambiar la hora</button>
                 </div>
+                <p class="ag-nota">Se abre WhatsApp con tu mensaje listo. La visita queda confirmada cuando Laura te responda.</p>
               </form>
-            </div>
-
-            <div class="ag-etapa" data-etapa="4" hidden>
-              <h3 class="ag-titulo" tabindex="-1">Revisa y confirma</h3>
-              <dl class="ag-resumen">
-                <div><dt>Inmueble</dt><dd>Apartaestudio 201</dd></div>
-                <div><dt>Día</dt><dd id="ag-r-dia"></dd></div>
-                <div><dt>Hora</dt><dd id="ag-r-hora"></dd></div>
-                <div><dt>Nombre</dt><dd id="ag-r-nombre"></dd></div>
-                <div><dt>Celular</dt><dd id="ag-r-tel"></dd></div>
-                <div id="ag-r-interes-fila" hidden><dt>Interés</dt><dd id="ag-r-interes"></dd></div>
-              </dl>
-              <a class="btn-wa" id="ag-confirmar" href="https://wa.me/573000000000" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Confirmar por WhatsApp</a>
-              <div class="ag-acciones"><button type="button" class="ag-volver" data-volver="3">← Cambiar mis datos</button></div>
-              <p class="ag-nota">Se abre WhatsApp con tu mensaje listo. La visita queda confirmada cuando Laura te responda.</p>
             </div>
 
             <p class="demo"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</p>
@@ -1062,32 +1042,34 @@
       st.hora = Number(b.dataset.h);
       horas.querySelectorAll('.ag-hora:not(:disabled)').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
       $('#ag-cita-elegida').textContent = diaTxt(st.dia) + ' · ' + horaTxt(st.hora);
+      armarWA();
       ir(3);
     });
 
-    // Paso 3: datos → resumen y enlace de WhatsApp
+    // Paso 3: datos → el botón verde abre WhatsApp con todo listo (sin paso de resumen)
     var form = $('#ag-form');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (!form.checkValidity()) { form.reportValidity(); return; }
-      if (!st.dia || st.hora === null) { ir(1); return; }
+    var conf = $('#ag-confirmar');
+    function armarWA() {
+      if (!st.dia || st.hora === null) return;
       var nombre = form.nombre.value.trim();
       var tel = form.celular.value.trim();
       var marcado = form.querySelector('input[name="interes"]:checked');
       var interes = marcado ? marcado.value : '';
-      $('#ag-r-dia').textContent = diaTxt(st.dia);
-      $('#ag-r-hora').textContent = horaTxt(st.hora);
-      $('#ag-r-nombre').textContent = nombre;
-      $('#ag-r-tel').textContent = tel;
-      $('#ag-r-interes').textContent = interes ? interes.charAt(0).toUpperCase() + interes.slice(1) : '';
-      $('#ag-r-interes-fila').hidden = !interes;
       // horaTxt() ya termina en punto («a. m.», «p. m.», «m.»), por eso no se agrega otro
       var msg = 'Hola Laura, quiero agendar una visita al Apartaestudio 201 del Conjunto Las Margaritas el ' +
-        diaTxt(st.dia) + ' a las ' + horaTxt(st.hora) + ' Mi nombre es ' + nombre + ' y mi celular es ' + tel + '.' +
+        diaTxt(st.dia) + ' a las ' + horaTxt(st.hora) + (nombre ? ' Mi nombre es ' + nombre : '') +
+        (tel ? (nombre ? ' y mi celular es ' : ' Mi celular es ') + tel + '.' : (nombre ? '.' : '')) +
         (interes ? ' Me interesa para ' + interes + '.' : '') + ' ¿Me confirmas, por favor?';
-      $('#ag-confirmar').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
-      ir(4);
+      conf.href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+    }
+    form.addEventListener('input', armarWA);
+    form.addEventListener('change', armarWA);
+    conf.addEventListener('click', function (e) {
+      if (!form.checkValidity()) { e.preventDefault(); form.reportValidity(); return; }
+      if (!st.dia || st.hora === null) { e.preventDefault(); ir(1); return; }
+      armarWA();
     });
+    form.addEventListener('submit', function (e) { e.preventDefault(); conf.click(); });
 
     raiz.addEventListener('click', function (e) {
       var v = e.target.closest('[data-volver]');

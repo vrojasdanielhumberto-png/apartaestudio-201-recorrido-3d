@@ -904,7 +904,7 @@ function barHandle(P, len, x, y, z, vertical = true, mat = M.steel) {
 }
 
 /** Puerta de gabinete con bisagra. zBack = plano trasero de la hoja (frente del casco). */
-function hingedDoor(parent, { x0, x1, y0, y1, zBack, t = T, hinge = 'left', angle = 100, mat = M.oak,
+function hingedDoor(parent, { x0, x1, y0, y1, zBack, t = T, hinge = 'left', angle = 85, mat = M.oak, // <90°: no choca con la nevera ni la pared
   handleLen = 0.16, handleY, label = 'Abrir gabinete', labelOpen = 'Cerrar gabinete', dur = 0.8 }) {
   const w = x1 - x0, h = y1 - y0;
   const dir = hinge === 'left' ? 1 : -1;
