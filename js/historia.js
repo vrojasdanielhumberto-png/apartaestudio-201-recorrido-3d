@@ -53,7 +53,7 @@ export function setupHistoria({ camera, renderer, scene, world, apt, parts, onFu
     .hs-tip{position:fixed;z-index:3;pointer-events:none;padding:5px 9px;border-radius:8px;font:500 12px/1.2 Inter,system-ui,sans-serif;
       background:rgba(20,20,22,.82);color:#fff;transform:translate(12px,12px);display:none;white-space:nowrap}
     :root{--alto-paso:170vh}
-    #historia:has(.paso.activo) .paso:not(.paso--inicio):not(.paso--panel) .tarjeta{
+    html.hs-listo #historia:has(.paso.activo) .paso:not(.paso--inicio):not(.paso--panel) .tarjeta{
       transition:opacity .28s ease, transform .32s ease}
     #historia:has(.paso.activo) .paso:not(.paso--inicio):not(.paso--panel):not(.leyendo) .tarjeta{
       opacity:0 !important;pointer-events:none}
@@ -78,6 +78,8 @@ export function setupHistoria({ camera, renderer, scene, world, apt, parts, onFu
     @media (max-width:899px){body:has(.paso.leyendo:not(.paso--inicio):not(.paso--panel)) .hs-sigue{bottom:auto;top:calc(var(--barra-h, 56px) + env(safe-area-inset-top,0px) + 12px)}}
     @media (prefers-reduced-motion:reduce){.hs-sigue svg{animation:none}}`;
   document.head.appendChild(style);
+  // las transiciones de las tarjetas se activan después de cargar (si no, se ven un instante todas juntas)
+  setTimeout(() => document.documentElement.classList.add('hs-listo'), 900);
 
   // ---------- Secciones ----------
   const sections = [...document.querySelectorAll('#historia .paso')].filter((s) => STOPS[s.dataset.paso]);
