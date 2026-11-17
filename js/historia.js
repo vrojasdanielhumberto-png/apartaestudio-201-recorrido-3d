@@ -79,6 +79,9 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
   const style = document.createElement('style');
   style.textContent = `
     #escena{position:fixed;inset:0;z-index:0}
+    /* viñeta suave, como el borde de una foto de cámara */
+    #escena::after{content:"";position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse 85% 80% at 50% 45%, transparent 58%, rgba(40,30,20,.14) 100%)}
     #historia{position:relative;z-index:1;pointer-events:none}
     #historia .tarjeta,#historia a,#historia button,#historia input,#historia [data-interactivo]{pointer-events:auto}
     :root{--alto-paso:170vh}
@@ -395,10 +398,13 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
       }
       const target = scrollParam();
       s = first ? target : s + (target - s) * (1 - Math.exp(-7 * dt));
+      if (Math.abs(target - s) < 0.0004) s = target; // se detiene del todo: permite la imagen nítida en reposo
       first = false;
       setActive(current);
       if (Math.abs(target - s) > 0.02) yawTarget *= Math.exp(-3 * dt); // al bajar, la mirada vuelve al frente
       yaw += (yawTarget - yaw) * (1 - Math.exp(-8 * dt));
+      if (Math.abs(yawTarget - yaw) < 0.0005) yaw = yawTarget;
+      if (Math.abs(yawTarget) < 0.0005) yawTarget = 0;
       const lk = poseAt(s);
       autoOpen(keys[current], localU);
       reconcile(dt);

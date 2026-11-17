@@ -58,6 +58,7 @@ export function applyBaked(aptGroup, baked) {
     const start = header.counts.slice(0, i).reduce((s, c) => s + c, 0) * 3;
     const attrs = variants.map((v) => new THREE.BufferAttribute(v.subarray(start, start + header.counts[i] * 3), 3, true));
     const src = m.material;
+    m.userData.srcMat = src;
     m.material = new THREE.MeshBasicMaterial({
       map: src.map || null,
       color: (src.color ? src.color.clone() : new THREE.Color(1, 1, 1)).multiplyScalar(header.M),

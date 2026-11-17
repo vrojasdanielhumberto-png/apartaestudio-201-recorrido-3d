@@ -79,7 +79,7 @@ function shade(hex, d) {
 }
 
 const tex = {
-  floor: tileTexture({ base: '#b2aca3', grout: '#97918a', tilesX: 2, tilesY: 1, period: 1.2, vary: 5 }),
+  floor: tileTexture({ base: '#a59e94', grout: '#8a8379', tilesX: 2, tilesY: 1, period: 1.2, vary: 6 }),
   bathFloor: tileTexture({ base: '#6a6e78', grout: '#4f525a', tilesX: 2, tilesY: 2, period: 1.2, vary: 8, seed: 3 }),
   darkWall: tileTexture({ base: '#363a47', grout: '#9a9ca3', tilesX: 1, tilesY: 2, period: 1.2, vary: 5, seed: 11 }),
   marbleWall: tileTexture({ base: '#f1f0ec', grout: '#d9d7d1', tilesX: 1, tilesY: 2, period: 1.2, vary: 3, seed: 5, veins: true }),
@@ -106,7 +106,7 @@ export const mats = {
 
 // ---------- Helpers ----------
 // Las superficies se subdividen cada ~15 cm para guardar la luz horneada por vértice.
-const SEG = 0.15;
+const SEG = 0.10;
 const segs = (s) => Math.max(1, Math.round(s / SEG));
 function box(w, h, d, mat, x, y, z, seg = true) {
   const g = seg ? new THREE.BoxGeometry(w, h, d, segs(w), segs(h), segs(d)) : new THREE.BoxGeometry(w, h, d);
@@ -366,7 +366,7 @@ function buildSurroundings() {
     g.add(m);
   };
   // Ventana de la sala (fachada +X): árboles y casa de techo rojo
-  photo('./img/vista-sala.jpg', 8.6, 8.3, 10.4, 1.3, 4.8, -Math.PI / 2);
+  photo('./img/vista-sala.jpg', 9.0, 8.7, 10.4, 1.6, 4.8, -Math.PI / 2); // foto: Unsplash (nR5aL-TSh1k)
   // Balcón (+Z): árboles, postes y la calle
   photo('./img/vista-balcon.jpg', 25.5, 17, 2.9, 2.6, 20.5, Math.PI); // foto: Unsplash (UIqDr16kZzY)
   // Ventana alta del baño: vidrio esmerilado (luz blanca difusa, sin vista)

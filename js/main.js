@@ -17,7 +17,7 @@ renderer.setPixelRatio(ratio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.46;
+renderer.toneMappingExposure = 0.43;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf1eee9);
@@ -37,13 +37,23 @@ const setVariant = baked ? applyBaked(apt.group, baked) : null;
 if (setVariant) {
   // Muebles y acabados: iluminados por una captura 360° del propio apartamento ya horneado
   scene.add(new THREE.HemisphereLight(0xffffff, 0xe9e2d6, 0.35));
-  const rt = new THREE.WebGLCubeRenderTarget(128, { type: THREE.HalfFloatType });
+  const rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType });
   const cube = new THREE.CubeCamera(0.05, 40, rt);
   cube.position.set(2.2, 1.35, 4.4);
   scene.add(cube);
   cube.update(renderer, scene);
   scene.environment = pmrem.fromCubemap(rt.texture).texture;
-  rt.dispose();
+  // Porcelanato con brillo: el piso refleja suavemente la luz de las ventanas y los muebles
+  for (const fm of [apt.group.userData.floorMat, apt.group.userData.bathFloorMat]) {
+    apt.group.traverse((o) => {
+      if (o.isMesh && o.userData.bake && o.userData.srcMat === fm) {
+        o.material.envMap = rt.texture;
+        o.material.combine = THREE.AddOperation; // solo lo muy brillante (las ventanas) se nota
+        o.material.reflectivity = fm === apt.group.userData.floorMat ? 0.035 : 0.025;
+        o.material.needsUpdate = true;
+      }
+    });
+  }
   // Afuera se ve como a plena luz del día (más claro que el interior, como en una foto)
   apt.surroundings.traverse((o) => {
     if (o.isMesh && !o.material.map && o.userData.flatTone !== false) o.material = new THREE.MeshBasicMaterial({ color: o.material.color.clone().multiplyScalar(2.2) });
@@ -68,7 +78,7 @@ setFurnished(true);
 const controls = setupHistoria({ camera, renderer, scene, world: S.world, apt, parts: S.parts, onFurnished: setFurnished });
 renderer.setPixelRatio(ratio);
 let dirty = true;
-addEventListener('resize', () => { renderer.setPixelRatio(ratio); dirty = true; });
+addEventListener('resize', () => { renderer.setPixelRatio(ratio); hq = false; dirty = true; });
 // Las fotos de la vista exterior llegan después: redibujar cuando carguen
 THREE.DefaultLoadingManager.onProgress = () => { dirty = true; };
 
@@ -91,6 +101,10 @@ function adapt(frameDt) {
 
 // ---------- Bucle ----------
 // Solo se dibuja cuando algo cambia (cámara, animaciones, amoblado, vista de planta).
+// Imagen nítida en reposo: mientras se mueve se dibuja a la resolución adaptable (fluido);
+// cuando la vista se queda quieta un momento, se redibuja UNA vez en alta resolución.
+const HQ_RATIO = Math.min(isPhone ? 2.5 : 2, Math.max(window.devicePixelRatio || 1, 1) * (isPhone ? 1 : 1.5));
+let still = 0, hq = false;
 const clock = new THREE.Clock();
 const lastCam = new THREE.Matrix4(), lastProj = new THREE.Matrix4();
 let lastState = '', first = true, renderedPrev = false, lastRenderT = 0;
@@ -101,11 +115,22 @@ renderer.setAnimationLoop((t) => {
   controls.update(dt);
   camera.updateMatrixWorld();
 
-  const state = `${staged.visible}|${apt.ceilings.visible}|${renderer.domElement.width}x${renderer.domElement.height}`;
+  const state = `${staged.visible}|${apt.ceilings.visible}`;
   if (state !== lastState) { lastState = state; dirty = true; }
   if (!lastCam.equals(camera.matrixWorld) || !lastProj.equals(camera.projectionMatrix)) dirty = true;
 
-  if (!dirty) { renderedPrev = false; return; }
+  if (!dirty) {
+    renderedPrev = false;
+    still += dt;
+    if (!hq && still > 0.3 && HQ_RATIO > ratio + 0.05) {
+      hq = true;
+      renderer.setPixelRatio(HQ_RATIO);
+      renderer.render(scene, camera);
+    }
+    return;
+  }
+  still = 0;
+  if (hq) { hq = false; renderer.setPixelRatio(ratio); renderedPrev = false; }
   lastCam.copy(camera.matrixWorld);
   lastProj.copy(camera.projectionMatrix);
   dirty = false;
