@@ -68,6 +68,17 @@ if (setVariant) {
   scene.add(sun);
 }
 
+// El espejo del baño refleja la captura 360° tomada en la sala (con zonas oscuras): se le da un
+// acabado de vidrio claro en vez de espejo perfecto, para que no aparezcan manchas negras.
+S.world.traverse((o) => {
+  if (o.isMesh && o.material && o.material.metalness === 1 && o.material.roughness <= 0.03) {
+    o.material = o.material.clone();
+    o.material.metalness = 0.15;
+    o.material.roughness = 0.12;
+    o.material.color.set(0xdfe6ea);
+  }
+});
+
 function setFurnished(on) {
   staged.visible = on;
   setVariant?.(on ? 0 : 1);

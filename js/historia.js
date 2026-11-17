@@ -26,27 +26,27 @@ export const SHOTS = {
   ],
   sala: [
     { pos: V(2.95, 1.65, 2.55), look: V(2.5, 1.0, 5.3), cel: V(2.55, 1.75, 2.5), celLook: V(3.15, 0.95, 5.2) },
-    // paneo desde la esquina entre la puerta de la alcoba y la sala: comedor y cocina → sofá
-    { pos: V(1.6, 2.0, 5.25), posTo: V(1.75, 2.0, 5.05), look: V(3.3, 0.9, 3.2), lookTo: V(0.9, 0.8, 3.4), hold: 0.6,
-      cel: V(1.5, 2.05, 5.3), celLook: V(3.0, 0.85, 3.3), celLookTo: V(0.9, 0.75, 3.5) },
+    // esquina superior junto a la puerta de la alcoba: sala, comedor y entrada completos
+    { pos: V(0.3, 2.32, 5.25), posTo: V(0.45, 2.3, 5.05), look: V(3.0, 0.35, 3.2), lookTo: V(2.2, 0.3, 2.7), hold: 0.6,
+      cel: V(0.3, 2.32, 5.25), celLook: V(2.8, 0.3, 3.4), celLookTo: V(1.6, 0.3, 3.0) },
   ],
   cocina: [
     { pos: V(2.40, E, 3.40), look: V(4.3, 1.15, 3.35), cel: V(1.70, E, 3.45) },
-    // paneo: cocina completa → nevera y lavadora
-    { pos: V(1.5, 1.85, 4.9), posTo: V(1.7, 1.85, 4.6), look: V(4.0, 0.95, 3.3), lookTo: V(4.0, 0.95, 2.1), hold: 0.6,
-      cel: V(1.35, 1.9, 5.0), celLook: V(3.9, 0.9, 3.2), celLookTo: V(3.9, 0.9, 2.0) },
+    // vista alta: cocina completa → nevera y lavadora
+    { pos: V(1.3, 2.3, 4.9), posTo: V(1.5, 2.3, 4.6), look: V(4.0, 0.6, 3.3), lookTo: V(4.0, 0.6, 2.1), hold: 0.6,
+      cel: V(1.2, 2.3, 5.0), celLook: V(3.9, 0.55, 3.1), celLookTo: V(3.9, 0.55, 2.0) },
   ],
   ropas: [{ pos: V(3.00, E, 2.85), look: V(4.3, 0.9, 1.8) }],
   bano: [
     { pos: V(2.95, E, 1.75), look: V(3.45, 0.9, 0.2), cel: V(2.95, 2.05, 1.66), celLook: V(3.5, 0.45, 0.35) },
-    // paneo: todo el baño, del lavamanos a la ducha
-    { pos: V(2.93, 2.0, 1.62), look: V(2.8, 0.55, 0.3), lookTo: V(3.95, 0.6, 0.5), hold: 0.6 },
+    // esquina superior dentro del baño (entra por debajo del marco y sube): lavamanos, sanitario y ducha
+    { pos: V(2.62, 2.3, 1.05), via: [V(2.95, 1.9, 1.32)], look: V(3.6, 0.25, 0.4), lookTo: V(3.95, 0.3, 0.55), hold: 0.6 },
   ],
   alcoba: [
-    { pos: V(0.45, E, 6.0), look: V(3.2, 1.0, 8.2), cel: V(0.4, 1.95, 5.8), celLook: V(2.6, 0.45, 7.55), via: [V(2.7, E, 2.9), V(1.2, E, 4.8), V(0.55, E, 5.4)] },
-    // paneo desde la esquina junto a la cabecera: alcoba completa con closet → balcón
-    { pos: V(3.9, 2.1, 6.05), posTo: V(3.75, 2.1, 6.25), look: V(1.9, 0.8, 7.7), lookTo: V(2.9, 0.9, 8.7), hold: 0.6,
-      cel: V(3.95, 2.15, 6.0), celLook: V(0.9, 0.9, 8.0), celLookTo: V(2.8, 0.9, 8.8) },
+    { pos: V(0.45, E, 6.0), look: V(3.2, 1.0, 8.2), cel: V(0.4, 1.95, 5.8), celLook: V(2.6, 0.45, 7.55), via: [V(2.95, 1.8, 1.4), V(2.7, E, 2.9), V(1.2, E, 4.8), V(0.55, E, 5.4)] },
+    // esquina superior junto a la puerta: cama, closet y balcón en una sola vista
+    { pos: V(0.3, 2.32, 5.9), posTo: V(0.45, 2.3, 6.05), look: V(2.6, 0.4, 7.6), lookTo: V(2.9, 0.5, 8.4), hold: 0.6,
+      cel: V(0.3, 2.32, 5.9), celLook: V(2.2, 0.35, 7.7), celLookTo: V(2.8, 0.45, 8.5) },
   ],
   closet: [{ pos: V(2.35, E, 6.75), look: V(0.7, 1.1, 8.45) }],
   balcon: [
@@ -397,7 +397,13 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
         return;
       }
       const target = scrollParam();
-      s = first ? target : s + (target - s) * (1 - Math.exp(-7 * dt));
+      if (first) s = target;
+      else {
+        const paso = (target - s) * (1 - Math.exp(-4.5 * dt));
+        // ~1,2 s por toma; si el salto es largo (botones de abajo) acelera para no tardar demasiado
+        const max = (1.7 + 0.9 * Math.max(0, Math.abs(target - s) - 2.5)) * dt;
+        s += Math.max(-max, Math.min(max, paso));
+      }
       if (Math.abs(target - s) < 0.0004) s = target; // se detiene del todo: permite la imagen nítida en reposo
       first = false;
       setActive(current);
