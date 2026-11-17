@@ -77,7 +77,7 @@ export function buildScene() {
   against(F.toilet(), 'z-', 0, 3.30, fixed);
   against(F.showerScreen({ width: 0.75, depth: 0.90, side: 'left' }), 'z-', 0, 3.975, fixed);
   // Lámparas de techo
-  for (const [x, z] of [[1.6, 3.4], [3.0, 3.6], [2.2, 6.9], [3.3, 0.6], [3.3, 1.9], [2.9, 8.8], [0.9, 1.2]]) {
+  for (const [x, z] of [[1.6, 3.4], [3.0, 3.6], [2.2, 6.9], [3.3, 0.6], [3.3, 1.9], [2.9, 8.8]]) {
     at(F.ceilingLight(), x, z, 0, fixed, false, H).userData.lamparaTecho = true;
   }
   // Tomas, interruptores y citófono (como en el video)

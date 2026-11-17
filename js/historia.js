@@ -26,23 +26,27 @@ export const SHOTS = {
   ],
   sala: [
     { pos: V(2.95, 1.65, 2.55), look: V(2.5, 1.0, 5.3), cel: V(2.55, 1.75, 2.5), celLook: V(3.15, 0.95, 5.2) },
-    // amplia: desde el lado de la ventana, centrada en sofá + comedor
-    { pos: V(3.7, 1.95, 4.95), look: V(0.9, 0.8, 3.8), cel: V(3.85, 2.0, 5.05), celLook: V(0.9, 0.75, 4.0) },
+    // paneo desde la esquina entre la puerta de la alcoba y la sala: comedor y cocina → sofá
+    { pos: V(1.6, 2.0, 5.25), posTo: V(1.75, 2.0, 5.05), look: V(3.3, 0.9, 3.2), lookTo: V(0.9, 0.8, 3.4), hold: 0.6,
+      cel: V(1.5, 2.05, 5.3), celLook: V(3.0, 0.85, 3.3), celLookTo: V(0.9, 0.75, 3.5) },
   ],
   cocina: [
     { pos: V(2.40, E, 3.40), look: V(4.3, 1.15, 3.35), cel: V(1.70, E, 3.45) },
-    // amplia: cocina completa con nevera y zona de ropas
-    { pos: V(1.35, 1.85, 4.6), look: V(4.0, 0.95, 2.6), cel: V(1.2, 1.9, 4.75), celLook: V(3.9, 0.9, 2.4) },
+    // paneo: cocina completa → nevera y lavadora
+    { pos: V(1.5, 1.85, 4.9), posTo: V(1.7, 1.85, 4.6), look: V(4.0, 0.95, 3.3), lookTo: V(4.0, 0.95, 2.1), hold: 0.6,
+      cel: V(1.35, 1.9, 5.0), celLook: V(3.9, 0.9, 3.2), celLookTo: V(3.9, 0.9, 2.0) },
   ],
   ropas: [{ pos: V(3.00, E, 2.85), look: V(4.3, 0.9, 1.8) }],
   bano: [
     { pos: V(2.95, E, 1.75), look: V(3.45, 0.9, 0.2), cel: V(2.95, 2.05, 1.66), celLook: V(3.5, 0.45, 0.35) },
-    { pos: V(2.92, 2.2, 1.9), look: V(3.45, 0.4, 0.4) },
+    // paneo: todo el baño, del lavamanos a la ducha
+    { pos: V(2.93, 2.0, 1.62), look: V(2.8, 0.55, 0.3), lookTo: V(3.95, 0.6, 0.5), hold: 0.6 },
   ],
   alcoba: [
     { pos: V(0.45, E, 6.0), look: V(3.2, 1.0, 8.2), cel: V(0.4, 1.95, 5.8), celLook: V(2.6, 0.45, 7.55), via: [V(2.7, E, 2.9), V(1.2, E, 4.8), V(0.55, E, 5.4)] },
-    // panorámica de alcoba + closet juntos
-    { pos: V(0.6, 2.15, 5.95), look: V(2.3, 0.6, 7.85), cel: V(0.5, 2.2, 5.85), celLook: V(2.0, 0.55, 7.9) },
+    // paneo desde la esquina junto a la cabecera: alcoba completa con closet → balcón
+    { pos: V(3.9, 2.1, 6.05), posTo: V(3.75, 2.1, 6.25), look: V(1.9, 0.8, 7.7), lookTo: V(2.9, 0.9, 8.7), hold: 0.6,
+      cel: V(3.95, 2.15, 6.0), celLook: V(0.9, 0.9, 8.0), celLookTo: V(2.8, 0.9, 8.8) },
   ],
   closet: [{ pos: V(2.35, E, 6.75), look: V(0.7, 1.1, 8.45) }],
   balcon: [
@@ -56,14 +60,14 @@ export const SHOTS = {
   contacto: [{ pos: V(-3.2, 7.2, -2.2), look: V(2.2, 0.2, 5.0), cel: V(-4.4, 8.6, -3.6) }],
 };
 
-// [grupo, desde qué parte de la sección (0–1) se abre]. Fuera de esas secciones, se cierra.
+// [grupo, desde, hasta] (parte de la sección, 0–1) en que está abierto. Fuera de ese tramo se cierra.
 const AUTO = {
-  entrada: [['puerta-entrada', 0.06]],
-  sala: [['ventana-sala', 0.1]],
-  cocina: [['cocina-superiores', 0.06], ['cocina-inferiores', 0.32]],
-  alcoba: [['closet', 0.55]],
-  closet: [['closet', 0]],
-  balcon: [['balcon', 0.03]],
+  entrada: [['puerta-entrada', 0.06, 1]],
+  sala: [['ventana-sala', 0.1, 0.9]],
+  cocina: [['cocina-superiores', 0.06, 0.82], ['cocina-inferiores', 0.3, 0.82]],
+  alcoba: [['closet', 0.55, 1]],
+  closet: [['closet', 0, 0.85]],
+  balcon: [['balcon', 0.03, 1]],
 };
 
 export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished }) {
@@ -82,6 +86,8 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
       transition:opacity .28s ease, transform .32s ease}
     #historia:has(.paso.activo) .paso:not(.paso--inicio):not(.paso--panel):not(.leyendo) .tarjeta{
       opacity:0 !important;pointer-events:none}
+    /* las tarjetas de otros espacios se esconden al instante (nunca se ven dos a la vez) */
+    #historia:has(.paso.activo) .paso:not(.activo):not(.paso--inicio):not(.paso--panel) .tarjeta{transition:none !important}
     @media (max-width:899px){
       /* En celular las tarjetas quedan fijas en pantalla: no se mueven con el scroll, solo cambian */
       #historia:has(.paso.activo) .paso:not(.paso--inicio):not(.paso--panel) .tarjeta{
@@ -101,7 +107,17 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     @keyframes hs-baja{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
     @media (min-width:900px){.hs-sigue{left:calc(50% + 210px)}}
     @media (max-width:899px){body:has(.paso.leyendo:not(.paso--inicio):not(.paso--panel)) .hs-sigue{bottom:auto;top:calc(var(--barra-h, 56px) + env(safe-area-inset-top,0px) + 12px)}}
-    @media (prefers-reduced-motion:reduce){.hs-sigue svg{animation:none}}`;
+    @media (prefers-reduced-motion:reduce){.hs-sigue svg{animation:none}}
+    .hs-cinta{display:none}
+    @media (max-width:899px){
+      .hs-cinta{display:block;position:fixed;right:5px;width:4px;z-index:6;pointer-events:none;border-radius:4px;
+        top:calc(var(--barra-h, 56px) + env(safe-area-inset-top,0px) + 14px);
+        bottom:calc(var(--nav-h, 56px) + env(safe-area-inset-bottom,0px) + 16px);background:rgba(30,30,32,.16)}
+      .hs-cinta-llena{position:absolute;inset:0;border-radius:4px;background:rgba(30,30,32,.78);transform-origin:top;transform:scaleY(0)}
+      .hs-cinta b{position:absolute;left:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;
+        background:#fff;box-shadow:0 0 0 1.5px rgba(30,30,32,.35)}
+      .hs-cinta b.on{background:rgba(30,30,32,.85);box-shadow:0 0 0 1.5px #fff}
+    }`;
   document.head.appendChild(style);
   // las transiciones de las tarjetas se activan después de cargar (si no, se ven un instante todas juntas)
   setTimeout(() => document.documentElement.classList.add('hs-listo'), 900);
@@ -115,7 +131,10 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
   function shotFor(sh, portrait) {
     let pos = portrait && sh.cel ? sh.cel : sh.pos;
     if (portrait && !sh.cel && pos.y > 2.5) pos = sh.look.clone().addScaledVector(pos.clone().sub(sh.look), 1.55);
-    return { pos, look: (portrait && sh.celLook) || sh.look, via: sh.via, hold: sh.hold };
+    const look = (portrait && sh.celLook) || sh.look;
+    const posTo = (portrait && sh.cel) ? (sh.celPosTo || pos) : (sh.posTo || pos);
+    const lookTo = (portrait && sh.celLookTo) || sh.lookTo || look;
+    return { pos, look, posTo, lookTo, via: sh.via, hold: sh.hold };
   }
   function buildSegs(portrait) {
     kf = [];
@@ -125,20 +144,20 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     });
     segs = kf.slice(0, -1).map((a, j) => {
       const b = kf[j + 1];
-      const pts = [a.pos, ...(b.via || []), b.pos];
+      const pts = [a.posTo, ...(b.via || []), b.pos];
       return { curve: pts.length > 2 ? new THREE.CatmullRomCurve3(pts, false, 'centripetal') : new THREE.LineCurve3(pts[0], pts[1]), a, b };
     });
   }
-  // (sección i, avance u de 0 a 1) → posición en las tomas: cada toma se queda quieta un rato
-  // (para leer o mirar) y luego avanza suave hacia la siguiente.
+  // (sección i, avance u de 0 a 1) → q. Cada toma j ocupa [2j, 2j+2): de 2j a 2j+1 se queda
+  // (o hace su paneo suave) y de 2j+1 a 2j+2 viaja a la siguiente toma.
   function kfParam(i, u) {
     const m = SHOTS[keys[i]].length, slot = 1 / m;
     const k = Math.min(m - 1, Math.floor(u / slot));
     const t = (u - k * slot) / slot;
-    const sh = kf[kfStart[i] + k];
-    const h = sh?.hold ?? (k === 0 ? 0.3 : 0.25);
-    const p = kfStart[i] + k + (t < h ? 0 : easeK((t - h) / (1 - h)));
-    return Math.min(p, segs.length);
+    const j = kfStart[i] + k;
+    const h = kf[j]?.hold ?? (k === 0 ? 0.3 : 0.25);
+    const q = 2 * j + (t < h ? t / h : 1 + easeK((t - h) / (1 - h)));
+    return Math.min(q, 2 * (kf.length - 1) + 1);
   }
 
   // ---------- Qué se abre solo ----------
@@ -156,13 +175,29 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     balcon: inter(parts.balconyDoor),
   };
   Object.values(GROUPS).flat().forEach((o) => { if (o.userData._closedLabel === undefined) o.userData._closedLabel = o.userData.getLabel(); });
-  const setOpen = (id, open) => (GROUPS[id] || []).forEach((o, i) => {
-    if (isOpen(o) !== open) setTimeout(() => o.userData.toggle(), i * 90);
-  });
+  // Lo que se pide abrir/cerrar se revisa al momento de ejecutarlo (si se baja y se sube rápido,
+  // nada queda abierto por una orden vieja). Además, cada medio segundo se reconcilia todo.
+  const desired = {};
+  const setOpen = (id, open) => {
+    desired[id] = open;
+    (GROUPS[id] || []).forEach((o, i) => setTimeout(() => {
+      if (desired[id] === open && isOpen(o) !== open) o.userData.toggle();
+    }, i * 90));
+  };
+  let reconT = 0;
+  function reconcile(dt) {
+    reconT += dt;
+    if (reconT < 0.6) return;
+    reconT = 0;
+    for (const id of Object.keys(GROUPS)) {
+      const d = !!desired[id];
+      for (const o of GROUPS[id]) if (isOpen(o) !== d) o.userData.toggle();
+    }
+  }
   const autoState = {};
   function autoOpen(key, u) {
     const want = {};
-    for (const [id, from] of AUTO[key] || []) want[id] = u >= from;
+    for (const [id, from, to] of AUTO[key] || []) want[id] = want[id] || (u >= from && u < to);
     for (const id of Object.keys(GROUPS)) {
       const w = !!want[id];
       if (autoState[id] !== w && (w || autoState[id])) setOpen(id, w);
@@ -293,11 +328,17 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     active = i;
   }
   const look = new THREE.Vector3();
-  function poseAt(p) {
-    const i = Math.max(0, Math.min(Math.floor(p), segs.length - 1)), t = THREE.MathUtils.clamp(p - i, 0, 1);
-    const sg = segs[i];
+  function poseAt(q) {
+    const j = Math.max(0, Math.min(Math.floor(q / 2), kf.length - 1));
+    const r = q - 2 * j;
+    if (r < 1 || j >= segs.length) {
+      const t = easeK(THREE.MathUtils.clamp(r, 0, 1)), k = kf[j];
+      camera.position.lerpVectors(k.pos, k.posTo, t);
+      return look.lerpVectors(k.look, k.lookTo, t);
+    }
+    const t = THREE.MathUtils.clamp(r - 1, 0, 1), sg = segs[j];
     sg.curve.getPoint(t, camera.position);
-    return look.lerpVectors(sg.a.look, sg.b.look, easeK(t));
+    return look.lerpVectors(sg.a.lookTo, sg.b.look, easeK(t));
   }
 
   // ---------- Aviso "Sigue bajando" ----------
@@ -316,6 +357,29 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     if (texto !== sigueTxt) { sigueTxt = texto; sigue.firstChild.textContent = texto; }
     const on = !planta && !fin && idle > 1.3;
     if (on !== sigueOn) { sigueOn = on; sigue.classList.toggle('on', on); }
+  }
+
+  // Cinta lateral: muestra en qué parte del recorrido vas y cuánto falta
+  const cintaEl = document.createElement('div');
+  cintaEl.className = 'hs-cinta';
+  cintaEl.setAttribute('aria-hidden', 'true');
+  cintaEl.innerHTML = '<i class="hs-cinta-llena"></i>' + sections.map(() => '<b></b>').join('');
+  document.body.appendChild(cintaEl);
+  const llena = cintaEl.querySelector('.hs-cinta-llena');
+  const puntos = [...cintaEl.querySelectorAll('b')];
+  let cintaMax = 1, lastProg = -1, lastPunto = -1;
+  function medirCinta() {
+    cintaMax = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+    sections.forEach((sec, k) => { puntos[k].style.top = (100 * Math.min(1, sec.offsetTop / cintaMax)).toFixed(2) + '%'; });
+  }
+  addEventListener('resize', medirCinta);
+  addEventListener('load', medirCinta);
+  setTimeout(medirCinta, 1200);
+  medirCinta();
+  function cinta() {
+    const prog = Math.min(1, Math.max(0, scrollY / cintaMax));
+    if (Math.abs(prog - lastProg) > 0.001) { lastProg = prog; llena.style.transform = 'scaleY(' + prog.toFixed(4) + ')'; }
+    if (current !== lastPunto) { puntos.forEach((p, k) => p.classList.toggle('on', k <= current)); lastPunto = current; }
   }
 
   const lamps = []; world.traverse((o) => { if (o.userData.lamparaTecho) lamps.push(o); });
@@ -337,6 +401,8 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
       yaw += (yawTarget - yaw) * (1 - Math.exp(-8 * dt));
       const lk = poseAt(s);
       autoOpen(keys[current], localU);
+      reconcile(dt);
+      cinta();
       // la tarjeta se ve en la primera toma de cada espacio y se esconde en la vista amplia
       const m = SHOTS[keys[current]].length;
       const leyendo = m > 1 ? localU < 0.55 / m : localU < 0.62;

@@ -286,10 +286,8 @@ export function buildApartment() {
 
   // Borde del edificio (losa del piso vista desde afuera)
   // Pasillo del edificio frente a la puerta de entrada (para llegar "desde afuera")
-  wall(group, colliders, 'z', 0.15, 2.23, -0.40, -0.25);          // pared izquierda del pasillo
-  wall(group, colliders, 'x', -0.40, 2.30, 0.15, 0.30);            // fondo del pasillo
+  // (solo el piso: sin paredes ni techo para que nada tape la vista de la puerta)
   group.add(hPlane(-0.25, 2.30, 0.30, 2.08, 0, mats.floor));
-  ceil(-0.25, 2.30, 0.30, 2.08);
 
   // (solo bajo el apartamento: la zona de escaleras de al lado no se dibuja)
   group.add(box(4.75, 0.25, 7.22, mats.facade, 2.125, -0.126, 5.69, false));
