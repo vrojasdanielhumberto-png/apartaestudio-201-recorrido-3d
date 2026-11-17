@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Apartaestudio 201</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Una sola apariencia clara a propósito: el 3D está iluminado como de día.
+     Todos los colores van explícitos; no hay variante oscura. */
+  :root {
+    color-scheme: light;
+    --papel: #f7f4ef;
+    --papel-2: #efeae2;
+    --blanco: #ffffff;
+    --tinta: #1e2320;
+    --tinta-2: #3b413c;
+    --suave: #5f655e;
+    --linea: rgba(30, 35, 32, .12);
+    --linea-fuerte: rgba(30, 35, 32, .24);
+    --roble: #b4834f;
+    --roble-osc: #85592e;
+    --roble-claro: #f0e4d3;
+    --roble-medio: #e5d2b8;
+    --greige: #d8d1c6;
+    --salvia: #8a9e83;
+    --salvia-osc: #48603f;
+    --salvia-claro: #e3eadd;
+    --panel: rgba(250, 248, 244, .86);
+    --panel-opaco: rgba(250, 248, 244, .965);
+    --chip: rgba(255, 255, 255, .78);
+    --sombra: 0 1px 2px rgba(30, 35, 32, .06), 0 18px 40px -18px rgba(30, 35, 32, .28);
+    --wa: #1c7a4b;
+    --wa-osc: #145c38;
+    --mapa-calle: #fbf9f5;
+    --mapa-manzana: #e7e1d7;
+    --mapa-parque: #d3dfcc;
+    --mapa-arbol: #b2c4a9;
+
+    --f-titulo: "Instrument Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --f-texto: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --barra-h: 56px;
+    --nav-h: 56px;
+    --seg-arriba: env(safe-area-inset-top, 0px);
+    --seg-abajo: env(safe-area-inset-bottom, 0px);
+    --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+    --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+    --radio: 18px;
+    --alto-paso: 120vh;
+    --ancho-tarjeta: 400px;
+  }
+  @media (min-width: 900px) {
+    :root {
+      --barra-h: 64px;
+      --nav-h: 64px;
+      --gutter-l: max(32px, env(safe-area-inset-left, 0px));
+      --gutter-r: max(32px, env(safe-area-inset-right, 0px));
+      --radio: 20px;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--papel); -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--papel); color: var(--tinta);
+    font-family: var(--f-texto); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+  ul, ol { padding: 0; list-style: none; }
+  button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  a { color: inherit; }
+  ::selection { background: var(--salvia-claro); color: var(--tinta); }
+  :focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; box-shadow: 0 0 0 2px var(--papel); }
+  .sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  .ico { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Cifras: el detalle protagonista. Inter con números tabulares y dígitos abiertos. */
+  .cifra {
+    font-family: var(--f-texto); font-weight: 600; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1, "ss01" 1;
+    white-space: nowrap;
+  }
+  .u { font-size: .62em; font-weight: 500; letter-spacing: 0; margin-left: .14em; color: var(--salvia-osc); }
+
+  /* ---------- Carga ---------- */
+  #cargando {
+    position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; background: var(--papel); color: var(--tinta); transition: opacity .6s ease;
+  }
+  #cargando .t { font-family: var(--f-titulo); font-size: 20px; font-weight: 600; letter-spacing: -.015em; }
+  #cargando .s { font-size: 13px; color: var(--suave); }
+  #cargando .barra { width: 160px; height: 3px; border-radius: 3px; background: var(--greige); overflow: hidden; }
+  #cargando .barra i { display: block; width: 40%; height: 100%; background: var(--tinta); border-radius: 3px; animation: cargar 1.1s ease-in-out infinite; }
+  @keyframes cargar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+
+  /* ---------- 3D detrás ---------- */
+  #escena { position: fixed; inset: 0; z-index: 0; background: var(--papel-2); }
+  #escena canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  /* ---------- Barra superior ---------- */
+  #barra {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    height: calc(var(--barra-h) + var(--seg-arriba));
+    padding: var(--seg-arriba) var(--gutter-r) 0 var(--gutter-l);
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(247, 244, 239, .86);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+    border-bottom: 1px solid var(--linea);
+  }
+  .marca { display: flex; flex-direction: column; line-height: 1; min-width: 0; }
+  .marca-tipo { font-size: 9.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--suave); }
+  .marca-num { font-size: 20px; margin-top: 3px; }
+  .precio {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13.5px; white-space: nowrap;
+    background: var(--salvia-claro); color: var(--tinta); border: 1px solid rgba(72, 96, 63, .2);
+  }
+  .precio-etq { display: none; font-size: 12px; color: var(--salvia-osc); font-weight: 500; }
+  .precio .u { margin-left: 0; }
+  .conmutadores { display: flex; gap: 6px; }
+  .barra-cta { display: none; }
+  @media (min-width: 720px) {
+    .barra-cta {
+      display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px 0 13px; border-radius: 999px;
+      background: var(--tinta); color: var(--papel); text-decoration: none; font-size: 13px; font-weight: 600; white-space: nowrap;
+      transition: background-color .15s linear;
+    }
+    .barra-cta .ico { font-size: 16px; }
+    .barra-cta:hover { background: var(--salvia-osc); }
+  }
+  .conmutador {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    height: 36px; width: 38px; padding: 0; border-radius: 999px;
+    border: 1px solid var(--linea-fuerte); background: rgba(255, 255, 255, .7); color: var(--tinta);
+    font-size: 13px; font-weight: 500; white-space: nowrap;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .conmutador .ico { font-size: 18px; }
+  .conmutador .btn-txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .conmutador:hover { background: var(--blanco); }
+  .conmutador[aria-pressed="true"] { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+  @media (max-width: 340px) { .precio .u { display: none; } }
+  @media (min-width: 600px) {
+    .conmutador { width: auto; padding: 0 14px 0 12px; }
+    .conmutador .btn-txt { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+    .precio-etq { display: inline; }
+  }
+  @media (min-width: 900px) {
+    #barra { gap: 12px; }
+    .marca { flex-direction: row; align-items: baseline; gap: 6px; }
+    .marca-tipo { font-family: var(--f-titulo); font-size: 16px; font-weight: 600; letter-spacing: -.01em; text-transform: none; color: var(--tinta); }
+    .marca-num { font-size: 16px; margin-top: 0; }
+    .precio { margin-left: 14px; }
+    .conmutadores { margin-left: auto; }
+  }
+
+  /* ---------- Historia ---------- */
+  #historia { position: relative; z-index: 10; overflow-x: clip; }
+  .paso {
+    position: relative; min-height: var(--alto-paso);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 var(--gutter-r) 8px var(--gutter-l);
+  }
+  .tarjeta {
+    position: sticky; bottom: calc(var(--nav-h) + var(--seg-abajo) + 8px);
+    /* Sin scroll interno: el dedo o la rueda sobre la tarjeta siempre mueven la página */
+    width: 100%; overflow: visible;
+    padding: 16px 18px 18px; border-radius: var(--radio);
+    background: var(--panel); color: var(--tinta);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2);
+    border: 1px solid rgba(255, 255, 255, .7); box-shadow: var(--sombra);
+    /* Solo un cambio de opacidad corto: nada de transform ni cambios de tamaño mientras se hace scroll */
+    transition: opacity .18s linear;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tarjeta { background: var(--panel-opaco); }
+  }
+  /* Sin JS todo se ve completo. Con el controlador activo, las tarjetas que no están en foco se atenúan. */
+  #historia:has(.paso.activo) .paso:not(.activo) .tarjeta { opacity: .6; }
+  .paso.activo .tarjeta { opacity: 1; }
+
+  .ceja {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--salvia-osc);
+  }
+  .ceja .area {
+    margin-left: auto; display: inline-block;
+    font-size: 14px; letter-spacing: -.01em; text-transform: none; color: var(--tinta);
+  }
+  .ceja .area::before { content: ""; display: inline-block; vertical-align: middle; width: 14px; height: 2px; margin: -2px 8px 0 0; border-radius: 2px; background: var(--roble); }
+  .tarjeta h2 {
+    font-family: var(--f-titulo); font-size: 21px; font-weight: 600; line-height: 1.15; letter-spacing: -.02em;
+    margin: 8px 0 6px; text-wrap: balance;
+  }
+  .desc { font-size: 14px; color: var(--tinta-2); text-wrap: pretty; margin-bottom: 12px; }
+
+  /* Fichas: 2 a 4 datos cortos por tarjeta (cifra o palabra grande + etiqueta mínima) */
+  .fichas { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 6px; }
+  .ficha {
+    display: flex; flex-direction: column; gap: 2px; min-width: 0;
+    padding: 8px 9px; border-radius: 12px; background: rgba(255, 255, 255, .72); border: 1px solid var(--linea);
+  }
+  .ficha b {
+    font-family: var(--f-titulo); font-size: 15px; font-weight: 600; letter-spacing: -.015em; line-height: 1.15;
+    color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ficha b.cifra { font-family: var(--f-texto); font-size: 17px; letter-spacing: -.025em; }
+  .ficha small { font-size: 11px; line-height: 1.25; color: var(--suave); }
+
+  .demo {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 3px 10px 3px 7px;
+    border-radius: 999px; border: 1px dashed var(--linea-fuerte); background: rgba(255, 255, 255, .55);
+    font-size: 11.5px; color: var(--suave);
+  }
+  .demo .ico { font-size: 13px; }
+
+  /* ---------- Inicio ---------- */
+  .paso--inicio { min-height: 100vh; min-height: 100svh; padding-bottom: calc(var(--nav-h) + var(--seg-abajo) + 10px); }
+  .tarjeta--hero { position: relative; bottom: auto; max-height: none; overflow: visible; padding: 18px 18px 16px; }
+  .tarjeta--hero h1 {
+    font-family: var(--f-titulo); font-size: 34px; font-weight: 600; line-height: 1; letter-spacing: -.035em; margin: 10px 0 8px;
+  }
+  .tarjeta--hero h1 .cifra { font-weight: 600; letter-spacing: -.04em; color: var(--roble-osc); }
+  .lema { font-size: 14px; color: var(--tinta-2); text-wrap: pretty; }
+  .precio-hero { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linea); }
+  .etq-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+  .demo.demo--mini { margin-top: 0; padding: 1px 8px 1px 6px; font-size: 10.5px; }
+  .abrev-c { display: none; }
+  .precio-hero .etq { display: block; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--suave); }
+  .precio-hero .grande { font-size: 34px; line-height: 1.1; letter-spacing: -.035em; }
+  .precio-hero .secundario { margin-top: 4px; font-size: 13px; color: var(--tinta-2); }
+  .precio-hero .secundario .cifra { color: var(--tinta); }
+  .stats { display: flex; flex-wrap: wrap; gap: 6px 0; margin-top: 14px; }
+  .stats li { display: flex; flex-direction: column; padding: 0 14px 0 0; margin-right: 14px; border-right: 1px solid var(--linea); line-height: 1.15; }
+  .stats li:last-child { border-right: 0; margin-right: 0; padding-right: 0; }
+  .stats .cifra { font-size: 19px; }
+  .stats small { font-size: 11.5px; color: var(--suave); }
+  .acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 14px; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px;
+    border-radius: 999px; background: var(--tinta); color: var(--papel); text-decoration: none;
+    font-size: 15px; font-weight: 600; letter-spacing: -.005em; transition: background-color .2s ease;
+  }
+  .cta .ico { font-size: 18px; }
+  .cta:hover { background: var(--salvia-osc); }
+  .desliza { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--suave); }
+  .desliza .riel { position: relative; width: 2px; height: 22px; border-radius: 2px; background: var(--greige); overflow: hidden; }
+  .desliza .riel::after { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 45%; border-radius: 2px; background: var(--tinta); animation: riel 1.6s ease-in-out infinite; }
+  @keyframes riel { 0% { transform: translateY(-110%); } 100% { transform: translateY(230%); } }
+  @media (max-width: 899px) {
+    #distribucion .desc, .nota-altura, .total { display: none; }
+    .areas > div { padding: 5px 10px; }
+    .stat-piso { display: none !important; }
+    .stats li:nth-last-child(2) { border-right: 0; margin-right: 0; padding-right: 0; }
+    .tarjeta--hero .cta { min-height: 44px; }
+  }
+  @media (max-width: 899px) and (max-height: 820px) { .lema { display: none; } }
+  @media (max-width: 420px) {
+    .abrev-l { display: none; }
+    .abrev-c { display: inline; }
+    .stats li { padding-right: 12px; margin-right: 12px; }
+    .stats .cifra { font-size: 18px; }
+  }
+
+  /* ---------- Distribución ---------- */
+  .areas { display: grid; gap: 3px; margin-top: 4px; }
+  .areas > div {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+    padding: 6px 10px; border-radius: 8px; border: 1px solid transparent;
+    background: linear-gradient(to right, var(--roble-claro) calc(var(--p, 0) * 100%), rgba(255, 255, 255, .5) 0);
+    transition: background-color .3s ease, border-color .3s ease;
+  }
+  .areas dt { font-size: 13.5px; color: var(--tinta); }
+  .areas dd { font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1, "ss01" 1; white-space: nowrap; }
+  .areas > div.activa, .areas > div[aria-current="true"] {
+    border-color: var(--salvia);
+    background: linear-gradient(to right, var(--salvia-claro) calc(var(--p, 0) * 100%), var(--blanco) 0);
+  }
+  .total {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--linea);
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--suave);
+  }
+  .total .cifra { font-size: 24px; letter-spacing: -.03em; text-transform: none; color: var(--tinta); }
+  .nota-altura { margin-top: 6px; font-size: 12.5px; color: var(--suave); }
+
+  /* ---------- Paneles anchos: zonas, ubicación, contacto ---------- */
+  .paso--panel { min-height: 110vh; padding-top: 40vh; padding-bottom: 6vh; }
+  .paso--panel .tarjeta {
+    position: relative; bottom: auto; max-height: none; overflow: visible;
+    width: 100%; max-width: 1120px; margin: 0 auto; padding: 20px 18px;
+    background: var(--panel-opaco);
+  }
+  .paso--panel .tarjeta > h2 { font-size: 24px; }
+  .paso--contacto { min-height: 0; padding-top: 30vh; padding-bottom: calc(var(--nav-h) + var(--seg-abajo) + 28px); }
+
+  .zonas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(138px, 1fr)); gap: 8px; margin-top: 16px; }
+  .zona { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: rgba(255, 255, 255, .7); border: 1px solid var(--linea); }
+  .zona-ico { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--salvia-claro); color: var(--salvia-osc); }
+  .zona-ico .ico { font-size: 22px; }
+  .zona h3 { font-family: var(--f-titulo); font-size: 15px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+  .zona-num { font-size: 24px; line-height: 1; }
+  .zona-num .u { font-size: 12px; margin-left: 4px; }
+  .zona p { font-size: 12.5px; color: var(--suave); line-height: 1.35; }
+
+  .ubic { display: grid; gap: 16px; margin-top: 14px; }
+  .barrio { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--tinta-2); margin-top: 2px; }
+  .barrio .ico { color: var(--roble-osc); }
+  .mapa-fig { border-radius: 14px; overflow: hidden; border: 1px solid var(--linea); background: var(--mapa-calle); }
+  .mapa { display: block; width: 100%; height: auto; }
+  .mapa-fig figcaption { padding: 8px 12px; font-size: 12px; color: var(--suave); border-top: 1px solid var(--linea); background: var(--blanco); }
+  .m-calle { fill: var(--mapa-calle); }
+  .m-manzana rect { fill: var(--mapa-manzana); }
+  .m-conjunto { fill: var(--roble-claro); stroke: var(--roble); stroke-width: 1.2; }
+  .m-parque { fill: var(--mapa-parque); }
+  .m-arbol { fill: var(--mapa-arbol); }
+  .m-radio { fill: rgba(138, 158, 131, .1); stroke: var(--salvia); stroke-width: 1.2; stroke-dasharray: 4 4; }
+  .m-metro-borde { fill: none; stroke: var(--mapa-calle); stroke-width: 8; stroke-linecap: round; }
+  .m-metro { fill: none; stroke: var(--salvia-osc); stroke-width: 3; stroke-linecap: round; }
+  .m-etq { fill: var(--suave); font-family: var(--f-texto); font-size: 8.5px; font-weight: 600; letter-spacing: .08em; }
+  .m-punto circle { fill: var(--tinta); stroke: var(--mapa-calle); stroke-width: 2; }
+  .m-punto text { fill: var(--papel); font-family: var(--f-texto); font-size: 11px; font-weight: 700; text-anchor: middle; }
+  .m-pin { fill: var(--tinta); }
+  .m-pin-centro { fill: var(--roble-claro); }
+  .m-sombra { fill: rgba(30, 35, 32, .2); }
+  .m-pin-etq { fill: var(--tinta); font-family: var(--f-texto); font-size: 10px; font-weight: 700; }
+
+  .lugares { display: grid; }
+  .lugares li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linea); }
+  .lugares li:last-child { border-bottom: 0; }
+  .lugares .punto { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--tinta); color: var(--papel); font-size: 11.5px; font-weight: 700; }
+  .lugares .nombre { font-size: 14.5px; font-weight: 500; }
+  .lugares .tiempo { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12.5px; color: var(--suave); white-space: nowrap; }
+  .lugares .tiempo .cifra { font-size: 20px; color: var(--tinta); }
+  .lugares .tiempo .ico { align-self: center; font-size: 15px; color: var(--roble-osc); }
+
+  .contacto-grid { display: grid; gap: 18px; }
+  .contacto-intro .desc { margin-top: 4px; }
+  .contacto-intro .btn-wa { width: 100%; }
+  @media (min-width: 520px) { .contacto-intro .btn-wa { width: auto; } }
+  .resumen { display: grid; margin-top: 14px; border-top: 1px solid var(--linea); }
+  .resumen > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--linea); }
+  .resumen dt { font-size: 13.5px; color: var(--tinta-2); }
+  .resumen dd { font-size: 17px; }
+  .contacto-cajas { display: grid; gap: 10px; }
+  .caja { padding: 16px; border-radius: 14px; background: var(--blanco); border: 1px solid var(--linea); }
+  .asesora { display: flex; align-items: center; gap: 14px; }
+  .avatar { display: grid; place-items: center; width: 52px; height: 52px; flex: none; border-radius: 50%; background: var(--roble-claro); color: var(--roble-osc); font-family: var(--f-titulo); font-size: 18px; font-weight: 600; border: 1px solid var(--roble-medio); }
+  .asesora-nombre { font-family: var(--f-titulo); font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  .asesora-rol { font-size: 13px; color: var(--suave); }
+  /* WhatsApp directo */
+  .btn-wa {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; padding: 0 20px;
+    border-radius: 999px; background: var(--wa); color: var(--blanco); border: 1px solid var(--wa);
+    text-decoration: none; font-size: 15px; font-weight: 600; line-height: 1.2; text-align: center;
+    transition: background-color .15s linear;
+  }
+  .btn-wa .ico { font-size: 19px; }
+  .btn-wa:hover { background: var(--wa-osc); border-color: var(--wa-osc); }
+  .wa-num-txt { margin-top: 8px; font-size: 13px; color: var(--suave); }
+  .wa-num-txt .cifra { color: var(--tinta); -webkit-user-select: all; user-select: all; }
+
+  /* Agenda de visitas (sin servidor: termina en WhatsApp) */
+  .agenda { scroll-margin-top: calc(var(--barra-h) + var(--seg-arriba) + 20px); border-color: var(--salvia); box-shadow: 0 0 0 3px var(--salvia-claro); }
+  .agenda:focus { outline: none; }
+  .ag-cab { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--salvia-osc); }
+  .ag-cab .ico { font-size: 16px; }
+  .ag-progreso { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; margin: 12px 0 14px; counter-reset: ag; }
+  .ag-progreso li {
+    counter-increment: ag; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0;
+    font-size: 11.5px; line-height: 1.2; color: var(--suave); text-align: center;
+  }
+  .ag-progreso li::before {
+    content: counter(ag); display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--papel); border: 1px solid var(--linea-fuerte); color: var(--tinta); font-size: 11px; font-weight: 700;
+  }
+  .ag-progreso li.hecho::before { background: var(--salvia); border-color: var(--salvia); color: var(--blanco); }
+  .ag-progreso li[aria-current="step"] { color: var(--tinta); font-weight: 600; }
+  .ag-progreso li[aria-current="step"]::before { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+  .ag-etapa[hidden] { display: none; }
+  .ag-titulo { font-family: var(--f-titulo); font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin-bottom: 10px; }
+  .ag-titulo:focus { outline: none; }
+  .ag-titulo:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+  .ag-elegido { font-size: 13.5px; color: var(--tinta-2); margin: -4px 0 10px; }
+  .ag-elegido b { color: var(--tinta); }
+  .ag-dias { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 6px; }
+  .ag-dia, .ag-hora, .ag-op span {
+    border: 1px solid var(--linea-fuerte); background: var(--papel); color: var(--tinta);
+    transition: background-color .15s linear, color .15s linear, border-color .15s linear;
+  }
+  .ag-dia { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 0 7px; border-radius: 12px; line-height: 1.1; }
+  .ag-dia small { font-size: 10.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); }
+  .ag-dia b { font-size: 21px; }
+  .ag-dia:hover, .ag-hora:not(:disabled):hover { border-color: var(--tinta); background: var(--blanco); }
+  .ag-dia[aria-pressed="true"], .ag-hora[aria-pressed="true"] { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+  .ag-dia[aria-pressed="true"] small { color: var(--greige); }
+  .ag-horas { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; }
+  .ag-hora { min-height: 42px; border-radius: 10px; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ag-hora:disabled { cursor: not-allowed; opacity: .45; text-decoration: line-through; background: transparent; }
+  .ag-vacio { font-size: 13.5px; color: var(--suave); }
+  .ag-campo { display: grid; gap: 5px; margin-bottom: 12px; }
+  .ag-campo label, .ag-campo legend { font-size: 13px; font-weight: 600; color: var(--tinta); padding: 0; }
+  .ag-campo legend small { font-weight: 400; color: var(--suave); }
+  .ag-campo input[type="text"], .ag-campo input[type="tel"] {
+    width: 100%; min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--linea-fuerte);
+    background: var(--blanco); color: var(--tinta); font: inherit; font-size: 16px;
+  }
+  .ag-campo input:focus-visible { outline: 2px solid var(--tinta); outline-offset: 1px; box-shadow: none; }
+  fieldset.ag-campo { border: 0; margin: 0 0 14px; padding: 0; min-width: 0; }
+  .ag-ops { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ag-op { position: relative; display: inline-flex; cursor: pointer; }
+  .ag-op input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+  .ag-op span { display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px; border-radius: 999px; font-size: 13.5px; }
+  .ag-op input:checked + span { background: var(--tinta); border-color: var(--tinta); color: var(--papel); }
+  .ag-op input:focus-visible + span { outline: 2px solid var(--tinta); outline-offset: 2px; }
+  .ag-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; }
+  .btn-primario {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 20px;
+    border-radius: 999px; border: 1px solid var(--tinta); background: var(--tinta); color: var(--papel);
+    font-size: 15px; font-weight: 600; transition: background-color .15s linear;
+  }
+  .btn-primario:hover { background: var(--salvia-osc); border-color: var(--salvia-osc); }
+  .ag-volver { padding: 6px 2px; border: 0; background: none; font-size: 13.5px; font-weight: 500; color: var(--tinta-2); text-decoration: underline; text-underline-offset: 3px; }
+  .ag-resumen { display: grid; margin-bottom: 14px; border-top: 1px solid var(--linea); }
+  .ag-resumen > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--linea); }
+  .ag-resumen > div[hidden] { display: none; }
+  .ag-resumen dt { font-size: 13px; color: var(--suave); flex: none; }
+  .ag-resumen dd { font-size: 14px; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+  .ag-nota { margin-top: 10px; font-size: 12.5px; color: var(--suave); }
+  .horario { display: flex; gap: 12px; align-items: flex-start; }
+  .horario > .ico { font-size: 20px; color: var(--roble-osc); margin-top: 2px; }
+  .horario strong { display: block; font-size: 14px; font-weight: 600; }
+  .horario p { font-size: 13.5px; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+  .pie { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--linea); font-size: 12px; color: var(--suave); }
+
+  /* ---------- Navegación de espacios ---------- */
+  #espacios {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    padding: 6px var(--gutter-r) calc(6px + var(--seg-abajo)) var(--gutter-l);
+    background: rgba(247, 244, 239, .88);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15); backdrop-filter: blur(14px) saturate(1.15);
+    border-top: 1px solid var(--linea);
+  }
+  #espacios .fila {
+    display: flex; gap: 6px; overflow-x: auto; padding: 4px; margin: 0 -4px;
+    scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+  }
+  #espacios .fila::-webkit-scrollbar { display: none; }
+  #espacios button {
+    flex: none; height: 36px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid var(--linea); background: rgba(255, 255, 255, .75); color: var(--tinta-2);
+    font-size: 13px; font-weight: 500; white-space: nowrap;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+  }
+  #espacios button:hover { background: var(--blanco); color: var(--tinta); }
+  #espacios button[aria-current="true"] { background: var(--tinta); color: var(--papel); border-color: var(--tinta); }
+
+  /* ---------- Escritorio ---------- */
+  @media (min-width: 900px) {
+    .paso { justify-content: flex-start; padding-bottom: 0; }
+    .tarjeta {
+      top: calc(var(--barra-h) + var(--seg-arriba) + 24px); bottom: auto;
+      width: var(--ancho-tarjeta);
+      padding: 24px 26px 24px;
+    }
+    .tarjeta h2 { font-size: 27px; margin: 10px 0 8px; }
+    .desc { font-size: 15px; margin-bottom: 16px; }
+    .fichas { gap: 8px; }
+    .ficha { padding: 11px 12px; }
+    .ficha b { font-size: 17px; }
+    .ficha b.cifra { font-size: 20px; }
+    .ficha small { font-size: 11.5px; }
+
+    .paso--inicio { justify-content: center; padding-top: calc(var(--barra-h) + var(--seg-arriba)); padding-bottom: calc(var(--nav-h) + 24px); }
+    .tarjeta--hero { width: 480px; padding: 30px 30px 26px; }
+    .tarjeta--hero h1 { font-size: 46px; margin: 14px 0 12px; }
+    .lema { font-size: 15.5px; }
+    .precio-hero { margin-top: 20px; padding-top: 16px; }
+    .precio-hero .grande { font-size: 46px; }
+    .stats { margin-top: 18px; }
+    .stats .cifra { font-size: 22px; }
+    .acciones { margin-top: 20px; }
+
+    .paso--panel { padding-top: 34vh; padding-bottom: 10vh; }
+    .paso--panel .tarjeta { position: relative; top: auto; width: 100%; max-height: none; padding: 32px 34px; }
+    .paso--panel .tarjeta > h2 { font-size: 32px; max-width: 22ch; }
+    .paso--panel .tarjeta > .desc { max-width: 60ch; }
+    .paso--contacto { padding-top: 24vh; padding-bottom: calc(var(--nav-h) + var(--seg-abajo) + 48px); }
+    .zonas-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 22px; }
+    .zona { padding: 18px; }
+    .ubic { grid-template-columns: 1.25fr 1fr; gap: 28px; align-items: start; margin-top: 20px; }
+    .contacto-grid { grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+
+    #espacios {
+      left: calc(var(--gutter-l) + var(--ancho-tarjeta) + 24px); right: var(--gutter-r);
+      bottom: calc(14px + var(--seg-abajo)); padding: 0;
+      background: none; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none;
+      display: flex; justify-content: center; pointer-events: none;
+    }
+    #espacios .fila {
+      pointer-events: auto; max-width: 100%; margin: 0; padding: 5px; border-radius: 999px;
+      background: var(--panel); border: 1px solid rgba(255, 255, 255, .7); box-shadow: var(--sombra);
+      -webkit-backdrop-filter: blur(16px) saturate(1.15); backdrop-filter: blur(16px) saturate(1.15);
+    }
+    #espacios button { height: 38px; padding: 0 16px; }
+  }
+  @media (min-width: 1280px) {
+    :root { --ancho-tarjeta: 420px; }
+  }
+
+  /* ---------- Movimiento reducido ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    #cargando .barra i { animation: none; width: 100%; }
+    .desliza .riel::after { animation: none; transform: none; height: 100%; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
+<meta name="description" content="Recorre en 3D el Apartaestudio 201 del Conjunto Las Margaritas: 32,24 m², una alcoba, balcón y cocina integrada.">
+<meta name="theme-color" content="#f7f4ef">
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+</script>
+
+<!-- Íconos dibujados a mano (trazo 1,6 en una cuadrícula de 24) -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.2"/></symbol>
+  <symbol id="i-plano" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 12h6M13 12h8M12 3v5M12 16v5"/></symbol>
+  <symbol id="i-sofa" viewBox="0 0 24 24"><path d="M5 11V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/><path d="M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v5H3z"/><path d="M6 18v2M18 18v2"/></symbol>
+  <symbol id="i-salon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.8 14.1A4.5 4.5 0 0 1 21 18.5"/></symbol>
+  <symbol id="i-bbq" viewBox="0 0 24 24"><path d="M4 10h16a8 8 0 0 1-16 0z"/><path d="M8.5 17 6.5 21M15.5 17l2 4M12 18v3"/><path d="M9.5 3c-1 1.5 1 2 0 4M14.5 3c-1 1.5 1 2 0 4"/></symbol>
+  <symbol id="i-gym" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></symbol>
+  <symbol id="i-cowork" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="10" rx="1.5"/><path d="M2 19h20M9.5 15l-.5 4M14.5 15l.5 4"/></symbol>
+  <symbol id="i-parque" viewBox="0 0 24 24"><path d="M3 21 7 4h10l4 17"/><path d="M10 4v9M14 4v9M9 13h6"/></symbol>
+  <symbol id="i-bici" viewBox="0 0 24 24"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l2.5 7H6M13.5 6h2.5"/></symbol>
+  <symbol id="i-porteria" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-parqueo" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9.5 17V7h3.5a3 3 0 0 1 0 6H9.5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><circle cx="13" cy="4.5" r="1.8"/><path d="M9.5 21l2.5-6.5 3 3V21M12 14.5l-.8-5.5 3.3-1.6 2.5 3.6h2.5M11.2 9 8 11v3.5"/></symbol>
+  <symbol id="i-carro" viewBox="0 0 24 24"><path d="M4 16v-4l2.2-5h11.6L20 12v4z"/><path d="M4 12h16"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="16.5" cy="17.5" r="1.6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4.5 20l1.2-3.6A8 8 0 1 1 8.6 19z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+</svg>
+
+<div id="cargando" role="status" aria-live="polite">
+  <div class="t">Apartaestudio 201</div>
+  <div class="barra"><i></i></div>
+  <div class="s">Preparando el recorrido 3D…</div>
+</div>
+
+<div id="escena" aria-hidden="true"></div>
+
+<header id="barra">
+  <div class="marca"><span class="marca-tipo">Apartaestudio</span> <span class="marca-num cifra">201</span></div>
+  <span class="precio" title="Arriendo mensual (dato de ejemplo)">
+    <span class="precio-etq">Arriendo</span>
+    <span class="cifra">$1.350.000<span class="u">/mes</span></span>
+  </span>
+  <div class="conmutadores" role="group" aria-label="Vista del modelo 3D">
+    <button type="button" class="conmutador" data-accion="planta" aria-pressed="false">
+      <svg class="ico" aria-hidden="true"><use href="#i-plano"/></svg><span class="btn-txt">Ver plano 3D</span>
+    </button>
+    <button type="button" class="conmutador" data-accion="amoblado" aria-pressed="true">
+      <svg class="ico" aria-hidden="true"><use href="#i-sofa"/></svg><span class="btn-txt">Amoblado</span>
+    </button>
+  </div>
+  <a class="barra-cta" href="#agenda"><svg class="ico" aria-hidden="true"><use href="#i-calendario"/></svg>Agendar visita</a>
+</header>
+
+<main id="historia">
+
+  <!-- 1. Inicio -->
+  <section class="paso paso--inicio" data-paso="inicio" id="inicio" aria-labelledby="t-inicio">
+    <div class="tarjeta tarjeta--hero">
+      <p class="ceja"><span>Conjunto Las Margaritas</span><span class="area cifra">Piso 2</span></p>
+      <h1 id="t-inicio">Apartaestudio <span class="cifra">201</span></h1>
+      <p class="lema">Una alcoba, balcón y cocina integrada en 32,24 m² bien pensados. Baja y recórrelo en 3D, espacio por espacio, como si ya estuvieras adentro.</p>
+      <div class="precio-hero">
+        <p class="etq-fila"><span class="etq">Arriendo</span><span class="demo demo--mini"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</span></p>
+        <span class="cifra grande">$1.350.000<span class="u">/mes</span></span>
+        <p class="secundario"><span class="abrev-l">Administración</span><span class="abrev-c" aria-hidden="true">Admin.</span> <span class="cifra">$165.000</span> · Venta <span class="cifra">$189.000.000</span></p>
+      </div>
+      <ul class="stats" aria-label="Datos principales">
+        <li><span class="cifra">32,24<span class="u">m²</span></span><small>área privada</small></li>
+        <li><span class="cifra">1</span><small>alcoba</small></li>
+        <li><span class="cifra">1</span><small>baño</small></li>
+        <li><span class="cifra">2,8<span class="u">m²</span></span><small>balcón</small></li>
+        <li class="stat-piso"><span class="cifra">2</span><small>piso</small></li>
+      </ul>
+      <div class="acciones">
+        <a class="cta" href="#agenda"><svg class="ico" aria-hidden="true"><use href="#i-calendario"/></svg>Agendar visita</a>
+        <span class="desliza"><span class="riel" aria-hidden="true"></span>Desliza para recorrer</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Distribución -->
+  <section class="paso" data-paso="distribucion" id="distribucion" aria-labelledby="t-distribucion">
+    <div class="tarjeta">
+      <p class="ceja"><span>Distribución</span><span class="area cifra">32,24<span class="u">m²</span></span></p>
+      <h2 id="t-distribucion">32 m² sin un rincón perdido</h2>
+      <p class="desc">Así se reparte el apartaestudio. La barra muestra cuánto ocupa cada espacio del total.</p>
+      <dl class="areas">
+        <div data-zona="sala" style="--p:.44"><dt>Sala-comedor y cocina</dt><dd>14,2 m²</dd></div>
+        <div data-zona="alcoba" style="--p:.34"><dt>Alcoba</dt><dd>10,9 m²</dd></div>
+        <div data-zona="balcon" style="--p:.087"><dt>Balcón</dt><dd>2,8 m²</dd></div>
+        <div data-zona="bano" style="--p:.071"><dt>Baño</dt><dd>2,3 m²</dd></div>
+        <div data-zona="ropas" style="--p:.068"><dt>Zona de ropas</dt><dd>2,2 m²</dd></div>
+        <div data-zona="closet" style="--p:.025"><dt>Closet</dt><dd>1,35 × 0,60 m</dd></div>
+      </dl>
+      <p class="total"><span>Área privada</span><span class="cifra">32,24<span class="u">m²</span></span></p>
+      <p class="nota-altura">Altura libre de 2,40 m en todos los espacios.</p>
+    </div>
+  </section>
+
+  <!-- 3. Entrada -->
+  <section class="paso" data-paso="entrada" id="entrada" aria-labelledby="t-entrada">
+    <div class="tarjeta">
+      <p class="ceja"><span>Entrada</span><span class="area cifra">2,40<span class="u">m</span></span></p>
+      <h2 id="t-entrada">Llegar a casa se siente seguro</h2>
+      <p class="desc">Puerta de seguridad, citófono a portería y un porcelanato greige que corre por todo el apartamento.</p>
+      <ul class="fichas">
+        <li class="ficha"><b>Seguridad</b><small>puerta negra</small></li>
+        <li class="ficha"><b>Citófono</b><small>a portería</small></li>
+        <li class="ficha"><b>Greige</b><small>porcelanato grande</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. Sala-comedor -->
+  <section class="paso" data-paso="sala" id="sala" aria-labelledby="t-sala">
+    <div class="tarjeta">
+      <p class="ceja"><span>Sala-comedor</span><span class="area cifra">14,2<span class="u">m²</span></span></p>
+      <h2 id="t-sala">Recibe, come y descansa con luz natural</h2>
+      <p class="desc">Sofá, comedor y una ventana amplia que deja entrar la luz y el verde de los árboles.</p>
+      <ul class="fichas">
+        <li class="ficha"><b class="cifra">4,35<span class="u">m</span></b><small>de frente</small></li>
+        <li class="ficha"><b>Ventana</b><small>1,15 × 1,20 m</small></li>
+        <li class="ficha"><b>Verde</b><small>vista a árboles</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. Cocina -->
+  <section class="paso" data-paso="cocina" id="cocina" aria-labelledby="t-cocina">
+    <div class="tarjeta">
+      <p class="ceja"><span>Cocina</span><span class="area cifra">1,55<span class="u">m</span></span></p>
+      <h2 id="t-cocina">Una cocina que da gusto usar</h2>
+      <p class="desc">Gabinetes en roble sin manijas, arriba y abajo, mesón de cuarzo blanco y campana extractora.</p>
+      <ul class="fichas">
+        <li class="ficha"><b>Roble</b><small>sin manijas</small></li>
+        <li class="ficha"><b>Inducción</b><small>2 zonas</small></li>
+        <li class="ficha"><b>Cuarzo</b><small>mesón blanco</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. Zona de ropas -->
+  <section class="paso" data-paso="ropas" id="ropas" aria-labelledby="t-ropas">
+    <div class="tarjeta">
+      <p class="ceja"><span>Zona de ropas</span><span class="area cifra">2,2<span class="u">m²</span></span></p>
+      <h2 id="t-ropas">La ropa, lejos de la sala</h2>
+      <p class="desc">Un espacio aparte para lavar y tender, con la conexión de la lavadora lista.</p>
+      <ul class="fichas">
+                <li class="ficha"><b>Lavadora</b><small>conexión lista</small></li>
+        <li class="ficha"><b>Mármol</b><small>enchape</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. Baño -->
+  <section class="paso" data-paso="bano" id="bano" aria-labelledby="t-bano">
+    <div class="tarjeta">
+      <p class="ceja"><span>Baño</span><span class="area cifra">2,3<span class="u">m²</span></span></p>
+      <h2 id="t-bano">Un baño con detalles de hotel</h2>
+      <p class="desc">Ducha en vidrio templado, gris oscuro con mármol blanco y un mueble flotante que deja el piso libre.</p>
+      <ul class="fichas">
+        <li class="ficha"><b>Vidrio</b><small>templado en la ducha</small></li>
+        <li class="ficha"><b>Flotante</b><small>mueble con lavamanos</small></li>
+        <li class="ficha"><b>Ventana</b><small>alta, ventila</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8. Alcoba -->
+  <section class="paso" data-paso="alcoba" id="alcoba" aria-labelledby="t-alcoba">
+    <div class="tarjeta">
+      <p class="ceja"><span>Alcoba</span><span class="area cifra">10,9<span class="u">m²</span></span></p>
+      <h2 id="t-alcoba">Tu cama queen y espacio de sobra</h2>
+      <p class="desc">Caben la cama y dos mesas de noche, con una puerta-ventana que llena el cuarto de luz.</p>
+      <ul class="fichas">
+        <li class="ficha"><b>Queen</b><small>1,60 × 2,00 m</small></li>
+        <li class="ficha"><b class="cifra">2</b><small>mesas de noche</small></li>
+        <li class="ficha"><b class="cifra">2,85<span class="u">m</span></b><small>puerta-ventana</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 9. Closet -->
+  <section class="paso" data-paso="closet" id="closet" aria-labelledby="t-closet">
+    <div class="tarjeta">
+      <p class="ceja"><span>Closet</span><span class="area cifra">1,35 × 0,60<span class="u">m</span></span></p>
+      <h2 id="t-closet">Toda tu ropa, ordenada hasta el techo</h2>
+      <p class="desc">Closet en madera con puertas corredizas, entrepaños, cajones y barra para colgar.</p>
+      <ul class="fichas">
+        <li class="ficha"><b class="cifra">2,40<span class="u">m</span></b><small>de piso a techo</small></li>
+        <li class="ficha"><b>Cajones</b><small>y entrepaños</small></li>
+        <li class="ficha"><b>Barra</b><small>para colgar</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 10. Balcón -->
+  <section class="paso" data-paso="balcon" id="balcon" aria-labelledby="t-balcon">
+    <div class="tarjeta">
+      <p class="ceja"><span>Balcón</span><span class="area cifra">2,8<span class="u">m²</span></span></p>
+      <h2 id="t-balcon">Tu rincón para el café de la mañana</h2>
+      <p class="desc">Sales desde la alcoba a un balcón con baranda negra y vista a las zonas verdes.</p>
+      <ul class="fichas">
+        <li class="ficha"><b class="cifra">2,85<span class="u">m</span></b><small>de largo</small></li>
+        <li class="ficha"><b>Verde</b><small>la vista</small></li>
+        <li class="ficha"><b>Baranda</b><small>metálica negra</small></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 11. Zonas comunes -->
+  <section class="paso paso--panel" data-paso="zonas" id="zonas" aria-labelledby="t-zonas">
+    <div class="tarjeta">
+      <p class="ceja"><span>Zonas comunes</span></p>
+      <h2 id="t-zonas">Lo que no cabe en 32 m², lo tienes en el conjunto</h2>
+      <p class="desc">Espacios para recibir visitas, entrenar o trabajar sin salir de casa.</p>
+      <ul class="zonas-grid">
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-salon"/></svg></span>
+          <h3>Salón social</h3>
+          <span class="zona-num cifra">40<span class="u">personas</span></span>
+          <p>45 m² para cumpleaños y reuniones</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-bbq"/></svg></span>
+          <h3>Zona BBQ</h3>
+          <span class="zona-num cifra">12<span class="u">personas</span></span>
+          <p>Asador y mesas al aire libre</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-gym"/></svg></span>
+          <h3>Gimnasio</h3>
+          <span class="zona-num cifra">60<span class="u">m²</span></span>
+          <p>Cardio y pesas sin pagar mensualidad</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-cowork"/></svg></span>
+          <h3>Terraza con coworking</h3>
+          <span class="zona-num cifra">16<span class="u">personas</span></span>
+          <p>Para trabajar con buena vista</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-parque"/></svg></span>
+          <h3>Parque infantil</h3>
+          <p>Juegos para los niños del conjunto</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-bici"/></svg></span>
+          <h3>Bicicletero</h3>
+          <p>Cubierto y dentro del conjunto</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-porteria"/></svg></span>
+          <h3>Portería</h3>
+          <span class="zona-num cifra">24<span class="u">h</span></span>
+          <p>Vigilancia y recibo de paquetes</p>
+        </li>
+        <li class="zona">
+          <span class="zona-ico"><svg class="ico" aria-hidden="true"><use href="#i-parqueo"/></svg></span>
+          <h3>Parqueadero de visitantes</h3>
+          <p>Para cuando te llegan visitas</p>
+        </li>
+      </ul>
+      <p class="demo"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</p>
+    </div>
+  </section>
+
+  <!-- 12. Ubicación -->
+  <section class="paso paso--panel" data-paso="ubicacion" id="ubicacion" aria-labelledby="t-ubicacion">
+    <div class="tarjeta">
+      <p class="ceja"><span>Ubicación</span></p>
+      <h2 id="t-ubicacion">El día a día, a pocos minutos</h2>
+      <p class="barrio"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg>Barrio de ejemplo, ciudad</p>
+      <div class="ubic">
+        <figure class="mapa-fig">
+          <svg class="mapa" viewBox="0 0 360 260" role="img" aria-labelledby="mapa-t" xmlns="http://www.w3.org/2000/svg">
+            <title id="mapa-t">Mapa ilustrativo del barrio con el apartamento y cinco lugares cercanos numerados</title>
+            <rect class="m-calle" x="0" y="0" width="360" height="260"/>
+            <g class="m-manzana">
+              <rect x="10" y="10" width="70" height="65" rx="6"/>
+              <rect x="100" y="10" width="70" height="65" rx="6"/>
+              <rect x="190" y="10" width="70" height="65" rx="6"/>
+              <rect x="280" y="10" width="70" height="65" rx="6"/>
+              <rect x="10" y="95" width="70" height="65" rx="6"/>
+              <rect x="280" y="95" width="70" height="65" rx="6"/>
+              <rect x="10" y="180" width="70" height="65" rx="6"/>
+              <rect x="100" y="180" width="70" height="65" rx="6"/>
+              <rect x="190" y="180" width="70" height="65" rx="6"/>
+              <rect x="280" y="180" width="70" height="65" rx="6"/>
+            </g>
+            <rect class="m-conjunto" x="100" y="95" width="70" height="65" rx="6"/>
+            <rect class="m-parque" x="190" y="95" width="70" height="65" rx="6"/>
+            <circle class="m-arbol" cx="203" cy="108" r="6"/>
+            <circle class="m-arbol" cx="246" cy="106" r="5"/>
+            <circle class="m-arbol" cx="226" cy="147" r="7"/>
+            <circle class="m-arbol" cx="249" cy="146" r="5"/>
+            <circle class="m-arbol" cx="201" cy="148" r="4.5"/>
+            <circle class="m-radio" cx="135" cy="128" r="112"/>
+            <path class="m-metro-borde" d="M-5 252 L365 116"/>
+            <path class="m-metro" d="M-5 252 L365 116"/>
+            <text class="m-etq" x="14" y="173.5">AV. DE EJEMPLO</text>
+            <text class="m-etq" x="296" y="91">METRO</text>
+            <ellipse class="m-sombra" cx="135" cy="134" rx="7" ry="2.4"/>
+            <path class="m-pin" d="M135 134c-8.5-10.5-13.5-16.5-13.5-23.5a13.5 13.5 0 0 1 27 0c0 7-5 13-13.5 23.5z"/>
+            <circle class="m-pin-centro" cx="135" cy="110.5" r="5"/>
+            <text class="m-pin-etq" x="152" y="104">201</text>
+            <g class="m-punto" transform="translate(212 126)"><circle r="10"/><text y="3.8">1</text></g>
+            <g class="m-punto" transform="translate(146 226)"><circle r="10"/><text y="3.8">2</text></g>
+            <g class="m-punto" transform="translate(230 166)"><circle r="10"/><text y="3.8">3</text></g>
+            <g class="m-punto" transform="translate(40 36)"><circle r="10"/><text y="3.8">4</text></g>
+            <g class="m-punto" transform="translate(326 222)"><circle r="10"/><text y="3.8">5</text></g>
+          </svg>
+          <figcaption>Mapa ilustrativo. El círculo marca unos 6 minutos a pie.</figcaption>
+        </figure>
+        <ol class="lugares">
+          <li><span class="punto" aria-hidden="true">1</span><span class="nombre">Parque</span><span class="tiempo"><span class="cifra">2</span>min <svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><span class="sr">a pie</span></span></li>
+          <li><span class="punto" aria-hidden="true">2</span><span class="nombre">Supermercado</span><span class="tiempo"><span class="cifra">3</span>min <svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><span class="sr">a pie</span></span></li>
+          <li><span class="punto" aria-hidden="true">3</span><span class="nombre">Estación de metro</span><span class="tiempo"><span class="cifra">6</span>min <svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><span class="sr">a pie</span></span></li>
+          <li><span class="punto" aria-hidden="true">4</span><span class="nombre">Universidad</span><span class="tiempo"><span class="cifra">10</span>min <svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><span class="sr">a pie</span></span></li>
+          <li><span class="punto" aria-hidden="true">5</span><span class="nombre">Centro comercial</span><span class="tiempo"><span class="cifra">8</span>min <svg class="ico" aria-hidden="true"><use href="#i-carro"/></svg><span class="sr">en carro</span></span></li>
+        </ol>
+      </div>
+      <p class="demo"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</p>
+    </div>
+  </section>
+
+  <!-- 13. Contacto -->
+  <section class="paso paso--panel paso--contacto" data-paso="contacto" id="contacto" aria-labelledby="t-contacto">
+    <div class="tarjeta">
+      <div class="contacto-grid">
+        <div class="contacto-intro">
+          <p class="ceja"><span>Contacto · Inmobiliaria Ejemplo</span></p>
+          <h2 id="t-contacto">Ven a conocerlo en persona</h2>
+          <p class="desc">Elige día y hora en la agenda, o escríbele directo a Laura. En unos 30 minutos te muestra el apartamento y las zonas comunes.</p>
+          <a class="btn-wa" href="https://wa.me/573000000000?text=Hola%20Laura%2C%20quiero%20agendar%20una%20visita%20al%20Apartaestudio%20201%20del%20Conjunto%20Las%20Margaritas.%20%C2%BFQu%C3%A9%20d%C3%ADas%20tienen%20disponibles%3F" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Abre WhatsApp y agenda con nosotros</a>
+          <p class="wa-num-txt">WhatsApp <span class="cifra">+57 300 000 0000</span></p>
+          <dl class="resumen">
+            <div><dt>Arriendo</dt><dd class="cifra">$1.350.000<span class="u">/mes</span></dd></div>
+            <div><dt>Administración</dt><dd class="cifra">$165.000<span class="u">/mes</span></dd></div>
+            <div><dt>Venta</dt><dd class="cifra">$189.000.000</dd></div>
+            <div><dt>Área privada</dt><dd class="cifra">32,24<span class="u">m²</span></dd></div>
+          </dl>
+          <p class="demo"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</p>
+        </div>
+        <div class="contacto-cajas">
+          <div class="caja asesora">
+            <span class="avatar" aria-hidden="true">LG</span>
+            <div>
+              <p class="asesora-nombre">Laura Gómez</p>
+              <p class="asesora-rol">Asesora comercial · Inmobiliaria Ejemplo</p>
+            </div>
+          </div>
+
+          <div class="caja agenda" id="agenda" tabindex="-1" role="region" aria-labelledby="ag-t">
+            <p class="ag-cab" id="ag-t"><svg class="ico" aria-hidden="true"><use href="#i-calendario"/></svg>Agenda tu visita</p>
+            <ol class="ag-progreso" aria-label="Pasos para agendar">
+              <li data-etapa="1" aria-current="step">Día</li>
+              <li data-etapa="2">Hora</li>
+              <li data-etapa="3">Datos</li>
+              <li data-etapa="4">Confirmar</li>
+            </ol>
+
+            <div class="ag-etapa" data-etapa="1">
+              <h3 class="ag-titulo" tabindex="-1">¿Qué día te queda bien?</h3>
+              <div class="ag-dias" id="ag-dias"><p class="ag-vacio">Cargando los próximos días…</p></div>
+            </div>
+
+            <div class="ag-etapa" data-etapa="2" hidden>
+              <h3 class="ag-titulo" tabindex="-1">¿A qué hora?</h3>
+              <p class="ag-elegido" id="ag-dia-elegido"></p>
+              <div class="ag-horas" id="ag-horas"></div>
+              <div class="ag-acciones"><button type="button" class="ag-volver" data-volver="1">← Cambiar el día</button></div>
+            </div>
+
+            <div class="ag-etapa" data-etapa="3" hidden>
+              <h3 class="ag-titulo" tabindex="-1">¿A nombre de quién?</h3>
+              <p class="ag-elegido" id="ag-cita-elegida"></p>
+              <form id="ag-form" autocomplete="on">
+                <div class="ag-campo">
+                  <label for="ag-nombre">Nombre</label>
+                  <input type="text" id="ag-nombre" name="nombre" autocomplete="name" required maxlength="60">
+                </div>
+                <div class="ag-campo">
+                  <label for="ag-tel">Celular</label>
+                  <input type="tel" id="ag-tel" name="celular" autocomplete="tel" inputmode="tel" required pattern="[0-9 +]{7,20}" maxlength="20" placeholder="300 123 4567">
+                </div>
+                <fieldset class="ag-campo">
+                  <legend>¿Arriendo o compra? <small>(opcional)</small></legend>
+                  <div class="ag-ops">
+                    <label class="ag-op"><input type="radio" name="interes" value="arriendo"><span>Arriendo</span></label>
+                    <label class="ag-op"><input type="radio" name="interes" value="compra"><span>Compra</span></label>
+                    <label class="ag-op"><input type="radio" name="interes" value="aún no lo sé"><span>Aún no sé</span></label>
+                  </div>
+                </fieldset>
+                <div class="ag-acciones">
+                  <button type="submit" class="btn-primario">Ver resumen</button>
+                  <button type="button" class="ag-volver" data-volver="2">← Cambiar la hora</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="ag-etapa" data-etapa="4" hidden>
+              <h3 class="ag-titulo" tabindex="-1">Revisa y confirma</h3>
+              <dl class="ag-resumen">
+                <div><dt>Inmueble</dt><dd>Apartaestudio 201</dd></div>
+                <div><dt>Día</dt><dd id="ag-r-dia"></dd></div>
+                <div><dt>Hora</dt><dd id="ag-r-hora"></dd></div>
+                <div><dt>Nombre</dt><dd id="ag-r-nombre"></dd></div>
+                <div><dt>Celular</dt><dd id="ag-r-tel"></dd></div>
+                <div id="ag-r-interes-fila" hidden><dt>Interés</dt><dd id="ag-r-interes"></dd></div>
+              </dl>
+              <a class="btn-wa" id="ag-confirmar" href="https://wa.me/573000000000" target="_blank" rel="noopener"><svg class="ico" aria-hidden="true"><use href="#i-chat"/></svg>Confirmar por WhatsApp</a>
+              <div class="ag-acciones"><button type="button" class="ag-volver" data-volver="3">← Cambiar mis datos</button></div>
+              <p class="ag-nota">Se abre WhatsApp con tu mensaje listo. La visita queda confirmada cuando Laura te responda.</p>
+            </div>
+
+            <p class="demo"><svg class="ico" aria-hidden="true"><use href="#i-info"/></svg>Datos de ejemplo para esta demo</p>
+          </div>
+
+          <div class="caja horario">
+            <svg class="ico" aria-hidden="true"><use href="#i-reloj"/></svg>
+            <div>
+              <strong>Horario de visitas</strong>
+              <p>Lunes a viernes, 9:00 a. m. a 5:00 p. m.</p>
+              <p>Sábados, 9:00 a. m. a 12:00 m.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="pie">Recorrido 3D hecho a partir del plano y el video del inmueble. Los muebles son de referencia y las medidas reales pueden variar unos centímetros.</p>
+    </div>
+  </section>
+
+</main>
+
+<nav id="espacios" aria-label="Espacios del apartamento">
+  <div class="fila">
+    <button type="button" data-ir="distribucion">Plano</button>
+    <button type="button" data-ir="entrada">Entrada</button>
+    <button type="button" data-ir="sala">Sala-comedor</button>
+    <button type="button" data-ir="cocina">Cocina</button>
+    <button type="button" data-ir="ropas">Ropas</button>
+    <button type="button" data-ir="bano">Baño</button>
+    <button type="button" data-ir="alcoba">Alcoba</button>
+    <button type="button" data-ir="closet">Closet</button>
+    <button type="button" data-ir="balcon">Balcón</button>
+  </div>
+</nav>
+
+<script>
+  // Agenda de visitas: día → hora → datos → resumen que se confirma por WhatsApp. Sin servidor.
+  (function () {
+    var WA = '573000000000';
+    var raiz = document.getElementById('agenda');
+    if (!raiz) return;
+    function $(sel) { return raiz.querySelector(sel); }
+    var etapas = raiz.querySelectorAll('.ag-etapa');
+    var marcas = raiz.querySelectorAll('.ag-progreso li');
+    var st = { dia: null, hora: null };
+    var largo = { weekday: 'long', day: 'numeric', month: 'long' };
+
+    function horaTxt(h) {
+      if (h === 12) return '12:00 m.';
+      return (h % 12 || 12) + ':00 ' + (h < 12 ? 'a. m.' : 'p. m.');
+    }
+    function diaTxt(d) { return d.toLocaleDateString('es-CO', largo); }
+    function corto(d, op) { return d.toLocaleDateString('es-CO', op).replace('.', ''); }
+
+    function ir(n) {
+      etapas.forEach(function (e) { e.hidden = Number(e.getAttribute('data-etapa')) !== n; });
+      marcas.forEach(function (m) {
+        var k = Number(m.getAttribute('data-etapa'));
+        if (k === n) m.setAttribute('aria-current', 'step'); else m.removeAttribute('aria-current');
+        m.classList.toggle('hecho', k < n);
+      });
+      var t = $('.ag-etapa[data-etapa="' + n + '"] .ag-titulo');
+      if (t) { try { t.focus({ preventScroll: true }); } catch (e) { t.focus(); } }
+    }
+
+    // Paso 1: los próximos 7 días, sin domingos
+    var caja = $('#ag-dias');
+    caja.textContent = '';
+    var hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    for (var i = 1; i <= 7; i++) {
+      var d = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + i);
+      if (d.getDay() === 0) continue;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ag-dia';
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', diaTxt(d));
+      b.dataset.t = String(d.getTime());
+      var s1 = document.createElement('small'); s1.textContent = corto(d, { weekday: 'short' });
+      var n = document.createElement('b'); n.className = 'cifra'; n.textContent = String(d.getDate());
+      var s2 = document.createElement('small'); s2.textContent = corto(d, { month: 'short' });
+      b.append(s1, n, s2);
+      caja.appendChild(b);
+    }
+    caja.addEventListener('click', function (e) {
+      var b = e.target.closest('.ag-dia');
+      if (!b) return;
+      st.dia = new Date(Number(b.dataset.t));
+      st.hora = null;
+      caja.querySelectorAll('.ag-dia').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      pintarHoras();
+      ir(2);
+    });
+
+    // Paso 2: de 9:00 a 17:00 cada hora (sábados hasta las 12); algunas ocupadas, siempre las mismas para cada fecha
+    var horas = $('#ag-horas');
+    function pintarHoras() {
+      $('#ag-dia-elegido').textContent = diaTxt(st.dia);
+      horas.textContent = '';
+      var fin = st.dia.getDay() === 6 ? 12 : 17;
+      for (var h = 9; h <= fin; h++) {
+        var ocupada = (st.dia.getDate() * 3 + h * 7) % 4 === 1;
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ag-hora';
+        b.dataset.h = String(h);
+        b.textContent = horaTxt(h);
+        if (ocupada) {
+          b.disabled = true;
+          var sr = document.createElement('span'); sr.className = 'sr'; sr.textContent = ', ocupada';
+          b.appendChild(sr);
+        } else {
+          b.setAttribute('aria-pressed', String(st.hora === h));
+        }
+        horas.appendChild(b);
+      }
+    }
+    horas.addEventListener('click', function (e) {
+      var b = e.target.closest('.ag-hora');
+      if (!b || b.disabled) return;
+      st.hora = Number(b.dataset.h);
+      horas.querySelectorAll('.ag-hora:not(:disabled)').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      $('#ag-cita-elegida').textContent = diaTxt(st.dia) + ' · ' + horaTxt(st.hora);
+      ir(3);
+    });
+
+    // Paso 3: datos → resumen y enlace de WhatsApp
+    var form = $('#ag-form');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      if (!st.dia || st.hora === null) { ir(1); return; }
+      var nombre = form.nombre.value.trim();
+      var tel = form.celular.value.trim();
+      var marcado = form.querySelector('input[name="interes"]:checked');
+      var interes = marcado ? marcado.value : '';
+      $('#ag-r-dia').textContent = diaTxt(st.dia);
+      $('#ag-r-hora').textContent = horaTxt(st.hora);
+      $('#ag-r-nombre').textContent = nombre;
+      $('#ag-r-tel').textContent = tel;
+      $('#ag-r-interes').textContent = interes ? interes.charAt(0).toUpperCase() + interes.slice(1) : '';
+      $('#ag-r-interes-fila').hidden = !interes;
+      // horaTxt() ya termina en punto («a. m.», «p. m.», «m.»), por eso no se agrega otro
+      var msg = 'Hola Laura, quiero agendar una visita al Apartaestudio 201 del Conjunto Las Margaritas el ' +
+        diaTxt(st.dia) + ' a las ' + horaTxt(st.hora) + ' Mi nombre es ' + nombre + ' y mi celular es ' + tel + '.' +
+        (interes ? ' Me interesa para ' + interes + '.' : '') + ' ¿Me confirmas, por favor?';
+      $('#ag-confirmar').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent(msg);
+      ir(4);
+    });
+
+    raiz.addEventListener('click', function (e) {
+      var v = e.target.closest('[data-volver]');
+      if (v) ir(Number(v.getAttribute('data-volver')));
+    });
+  })();
+</script>
+<script type="module" src="./js/main.js"></script>
