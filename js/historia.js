@@ -358,8 +358,105 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
     const enAmplia = m > 1 && localU > 1 / m && camera.position.y < 2.45;
     const texto = enAmplia && !usedLook && matchMedia('(pointer: coarse)').matches ? 'Desliza a los lados para mirar' : 'Sigue bajando';
     if (texto !== sigueTxt) { sigueTxt = texto; sigue.firstChild.textContent = texto; }
-    const on = !planta && !fin && idle > 1.3;
+    const on = !planta && !fin && idle > 1.3 && !playing && !guiaAbierta;
     if (on !== sigueOn) { sigueOn = on; sigue.classList.toggle('on', on); }
+  }
+
+  // ---------- Para cualquier persona: guía al entrar, recorrido automático y botones grandes ----------
+  // (comentario de usuarios: no todos entienden que hay que deslizar; debe servirle a un niño o a alguien de 70 años)
+  const ico = {
+    play: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
+    up: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    down: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    mano: '<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><path d="M27 34V14a4 4 0 0 1 8 0v16l2-1a4 4 0 0 1 5 2l1 2 2-1a4 4 0 0 1 5 3v3l1-.4a4 4 0 0 1 5 3.6V52c0 6-5 10-11 10H35c-4 0-7-2-9-5l-8-12a4 4 0 0 1 6-5z" fill="#fff" stroke="#1D2626" stroke-width="2.4" stroke-linejoin="round"/></svg>',
+  };
+  const guiaCss = document.createElement('style');
+  guiaCss.textContent = `
+    .hs-guia{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;
+      background:rgba(20,22,22,.42);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+    .hs-guia[hidden]{display:none}
+    .hs-guia-caja{width:min(440px,100%);background:#FBF9F5;color:#1D2626;border-radius:22px;padding:26px 24px 22px;
+      box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;font-family:Inter,system-ui,sans-serif}
+    .hs-guia h2{font:700 26px/1.2 'Instrument Sans',Inter,system-ui,sans-serif;margin:6px 0 10px}
+    .hs-guia p{font-size:17px;line-height:1.45;color:#44504C;margin:0 0 18px}
+    .hs-guia-mano{height:96px;display:flex;align-items:flex-end;justify-content:center}
+    .hs-guia-mano svg{animation:hs-desliza 1.6s ease-in-out infinite}
+    @keyframes hs-desliza{0%{transform:translateY(18px);opacity:0}25%{opacity:1}75%{transform:translateY(-26px);opacity:1}100%{transform:translateY(-30px);opacity:0}}
+    .hs-guia button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;border-radius:14px;
+      font:600 18px/1 Inter,system-ui,sans-serif;cursor:pointer;border:0}
+    .hs-guia .hs-g1{background:#56663F;color:#fff;margin-bottom:10px}
+    .hs-guia .hs-g2{background:transparent;color:#1D2626;border:1.5px solid #CFC6B6}
+    .hs-guia button:focus-visible,.hs-dock button:focus-visible{outline:3px solid #9A6A42;outline-offset:2px}
+    .hs-dock{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:7;display:flex;flex-direction:column;gap:10px}
+    .hs-dock button{width:56px;height:56px;border-radius:50%;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;
+      background:rgba(24,24,26,.84);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+    .hs-dock .hs-play{background:#56663F;width:64px;height:64px;margin-left:-4px}
+    .hs-dock .hs-play.on{background:#9A6A42}
+    @media (max-width:899px){.hs-dock{top:auto;transform:none;bottom:calc(var(--nav-h,56px) + env(safe-area-inset-bottom,0px) + 12px);right:22px}
+      body:has(.paso.leyendo:not(.paso--inicio):not(.paso--panel)) .hs-dock{bottom:auto;top:calc(var(--barra-h,56px) + env(safe-area-inset-top,0px) + 64px)}}
+    @media (prefers-reduced-motion:reduce){.hs-guia-mano svg{animation:none}}`;
+  document.head.appendChild(guiaCss);
+
+  const guia = document.createElement('div');
+  guia.className = 'hs-guia';
+  guia.setAttribute('role', 'dialog');
+  guia.setAttribute('aria-modal', 'true');
+  guia.setAttribute('aria-labelledby', 'hs-guia-t');
+  guia.innerHTML = '<div class="hs-guia-caja"><div class="hs-guia-mano">' + ico.mano + '</div>' +
+    '<h2 id="hs-guia-t">Así se recorre el apartamento</h2>' +
+    '<p>Desliza el dedo hacia arriba (o usa la rueda del mouse) y la cámara camina sola por cada espacio. También te lo podemos mostrar sin que toques nada.</p>' +
+    '<button type="button" class="hs-g1">' + ico.play + 'Mostrarme el recorrido</button>' +
+    '<button type="button" class="hs-g2">Lo recorro yo</button></div>';
+  document.body.appendChild(guia);
+  let guiaAbierta = false;
+  try { guiaAbierta = !sessionStorage.getItem('hs-guia'); } catch { guiaAbierta = true; }
+  guia.hidden = true;
+  const cerrarGuia = () => { guia.hidden = true; guiaAbierta = false; try { sessionStorage.setItem('hs-guia', '1'); } catch {} };
+  // aparece cuando termina de cargar el 3D
+  setTimeout(() => { if (guiaAbierta) { guia.hidden = false; guia.querySelector('.hs-g1').focus({ preventScroll: true }); } }, 1500);
+  guia.querySelector('.hs-g1').addEventListener('click', () => { cerrarGuia(); setPlaying(true); });
+  guia.querySelector('.hs-g2').addEventListener('click', cerrarGuia);
+  // si la persona ya empieza a deslizar, la guía se quita sola (entendió)
+  for (const ev of ['wheel', 'touchmove']) addEventListener(ev, () => { if (!guia.hidden) cerrarGuia(); }, { passive: true });
+  addEventListener('keydown', (e) => { if (!guia.hidden && e.key === 'Escape') cerrarGuia(); });
+
+  const dock = document.createElement('div');
+  dock.className = 'hs-dock';
+  dock.innerHTML = '<button type="button" class="hs-prev" aria-label="Espacio anterior">' + ico.up + '</button>' +
+    '<button type="button" class="hs-play" aria-label="Recorrido automático">' + ico.play + '</button>' +
+    '<button type="button" class="hs-next" aria-label="Siguiente espacio">' + ico.down + '</button>';
+  document.body.appendChild(dock);
+  const btnPlay = dock.querySelector('.hs-play');
+  let playing = false;
+  function setPlaying(on) {
+    playing = on && keys[current] !== 'contacto';
+    btnPlay.classList.toggle('on', playing);
+    btnPlay.innerHTML = playing ? ico.pause : ico.play;
+    btnPlay.setAttribute('aria-label', playing ? 'Pausar recorrido' : 'Recorrido automático');
+    if (playing) exitPlanta();
+  }
+  btnPlay.addEventListener('click', () => setPlaying(!playing));
+  const irA = (k) => {
+    const sec = sections[Math.max(0, Math.min(sections.length - 1, k))];
+    exitPlanta();
+    sec.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  };
+  dock.querySelector('.hs-prev').addEventListener('click', () => { setPlaying(false); irA(localU < 0.1 ? current - 1 : current); });
+  dock.querySelector('.hs-next').addEventListener('click', () => { setPlaying(false); irA(current + 1); });
+  // cualquier gesto propio de la persona pausa el recorrido automático
+  for (const ev of ['wheel', 'touchstart', 'keydown']) addEventListener(ev, (e) => {
+    if (playing && !(e.target.closest && e.target.closest('.hs-dock'))) setPlaying(false);
+  }, { passive: true });
+  // velocidad: un espacio (≈1,7 pantallas de scroll) en unos 10 segundos
+  let restoY = 0;
+  function autoplay(dt) {
+    if (!playing) return;
+    restoY += innerHeight * 0.17 * dt;
+    const paso = Math.floor(restoY);
+    if (paso >= 1) { restoY -= paso; window.scrollBy(0, paso); }
+    const finPagina = scrollY + innerHeight >= document.documentElement.scrollHeight - 4;
+    if (keys[current] === 'contacto' || finPagina) setPlaying(false);
   }
 
   // Cinta lateral: muestra en qué parte del recorrido vas y cuánto falta
@@ -423,6 +520,7 @@ export function setupHistoria({ camera, renderer, world, apt, parts, onFurnished
         lastLeyendo = leyendo; lastLeyIdx = current;
       }
       hint(dt);
+      autoplay(dt);
       centerNav();
       camera.lookAt(lk);
       if (Math.abs(yaw) > 1e-4) camera.rotateOnWorldAxis(UP, yaw);
